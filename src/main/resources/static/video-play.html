@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>视频播放 - EasyBoke</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Microsoft YaHei', Arial, sans-serif; background: #F5F6F7; min-height: 100vh; }
+        .header { background: rgba(255, 255, 255, 0.95); box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); padding: 15px 0; position: sticky; top: 0; z-index: 1000; }
+        .header-content { max-width: 1200px; margin: 0 auto; padding: 0 20px; display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 24px; font-weight: bold; color: #12B7F5; cursor: pointer; }
+        .nav-menu { display: flex; gap: 20px; }
+        .nav-menu a { text-decoration: none; color: #333; font-weight: 500; transition: color 0.3s; }
+        .nav-menu a:hover { color: #12B7F5; }
+        .container { max-width: 1200px; margin: 30px auto; padding: 0 20px; }
+        .back-btn { display: inline-flex; align-items: center; gap: 8px; color: #12B7F5; text-decoration: none; margin-bottom: 20px; font-size: 16px; transition: opacity 0.3s; }
+        .back-btn:hover { opacity: 0.8; }
+        .player-wrapper { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2); }
+        .video-container { width: 100%; background: #000; position: relative; }
+        .video-container iframe, .video-container video { width: 100%; height: 600px; border: none; }
+        .video-details { padding: 30px; }
+        .video-title { font-size: 28px; color: #222; margin-bottom: 15px; font-weight: bold; }
+        .video-meta { display: flex; gap: 30px; color: #555; font-size: 14px; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #eee; }
+        .video-meta span { display: flex; align-items: center; gap: 5px; }
+        .video-description { color: #444; line-height: 1.8; font-size: 15px; }
+        .action-buttons { display: flex; gap: 15px; margin-top: 25px; padding-top: 25px; border-top: 1px solid #eee; }
+        .btn { padding: 12px 30px; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.3s; display: inline-flex; align-items: center; gap: 8px; }
+        .btn-like { background: #ecf5ff; color: #409eff; }
+        .btn-like:hover { background: #409eff; color: white; }
+        .btn-like.liked { background: #f56c6c; color: white; }
+        .btn-share { background: #f4f4f5; color: #333; }
+        .btn-share:hover { background: #909399; color: white; }
+        .loading { text-align: center; padding: 100px; color: #999; font-size: 18px; }
+        .error-state { text-align: center; padding: 100px; background: white; border-radius: 12px; color: #999; }
+
+        /* 评论区样式 */
+        .comment-section { background: white; border-radius: 12px; padding: 30px; margin-top: 20px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); }
+        .comment-section h3 { font-size: 20px; color: #222; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid #12B7F5; }
+        .comment-form { margin-bottom: 30px; }
+        .comment-form textarea { width: 100%; padding: 12px; border: 1px solid #dcdfe6; border-radius: 8px; font-size: 14px; resize: vertical; min-height: 80px; font-family: inherit; }
+        .comment-form textarea:focus { outline: none; border-color: #12B7F5; box-shadow: 0 0 0 3px rgba(18, 183, 245, 0.1); }
+        .comment-form .form-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
+        .comment-form .btn-submit { background: #12B7F5; color: white; padding: 8px 24px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; transition: all 0.3s; }
+        .comment-form .btn-submit:hover { background: #0ea2db; }
+        .comment-form .login-tip { color: #999; font-size: 13px; }
+        .comment-form .login-tip a { color: #12B7F5; text-decoration: none; }
+
+        .comment-list { list-style: none; }
+        .comment-item { padding: 15px 0; border-bottom: 1px solid #f0f0f0; }
+        .comment-item:last-child { border-bottom: none; }
+        .comment-avatar { width: 36px; height: 36px; border-radius: 50%; background: #12B7F5; color: white; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: bold; float: left; margin-right: 12px; flex-shrink: 0; }
+        .comment-body { overflow: hidden; }
+        .comment-header { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+        .comment-username { font-weight: 600; color: #333; font-size: 14px; }
+        .comment-time { color: #999; font-size: 12px; }
+        .comment-content { color: #444; font-size: 14px; line-height: 1.6; margin-bottom: 8px; }
+        .comment-actions { display: flex; gap: 15px; }
+        .comment-actions a { color: #999; font-size: 12px; text-decoration: none; cursor: pointer; transition: color 0.3s; }
+        .comment-actions a:hover { color: #12B7F5; }
+
+        /* 嵌套回复 */
+        .replies { margin-left: 48px; margin-top: 10px; padding-left: 15px; border-left: 2px solid #e8e8e8; }
+        .reply-item { padding: 10px 0; border-bottom: 1px solid #f5f5f5; }
+        .reply-item:last-child { border-bottom: none; }
+        .reply-form { margin-top: 10px; margin-left: 48px; }
+        .reply-form textarea { width: 100%; padding: 8px 12px; border: 1px solid #dcdfe6; border-radius: 6px; font-size: 13px; resize: vertical; min-height: 50px; font-family: inherit; }
+        .reply-form textarea:focus { outline: none; border-color: #12B7F5; }
+        .reply-form .reply-actions { display: flex; gap: 8px; margin-top: 8px; }
+        .reply-form .btn-reply-submit { background: #12B7F5; color: white; padding: 5px 16px; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; }
+        .reply-form .btn-reply-cancel { background: #f4f4f5; color: #606266; padding: 5px 16px; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; }
+
+        .empty-comments { text-align: center; padding: 40px; color: #999; }
+        @media (max-width: 768px) {
+            .video-container iframe, .video-container video { height: 300px; }
+            .video-title { font-size: 20px; }
+            .video-meta { flex-wrap: wrap; gap: 15px; }
+            .replies { margin-left: 20px; }
+            .reply-form { margin-left: 20px; }
+        }
+    </style>
+</head>
+<body>
+<div class="header">
+    <div class="header-content">
+        <div class="logo" onclick="window.location.href='/index.html'"> EasyBoke</div>
+        <div class="nav-menu">
+            <a href="/index.html">首页</a>
+            <a href="/video-list.html">视频</a>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <a href="/video-list.html" class="back-btn"> 返回视频列表</a>
+
+    <div class="player-wrapper">
+        <div class="video-container" id="videoContainer">
+            <div class="loading">加载中...</div>
+        </div>
+
+        <div class="video-details">
+            <h1 class="video-title" id="videoTitle"></h1>
+            <div class="video-meta">
+                <span> <span id="viewCount">0</span> 次播放</span>
+                <span> <span id="likeCount">0</span> 点赞</span>
+                <span> <span id="duration">00:00</span></span>
+                <span> <span id="publishTime"></span></span>
+            </div>
+            <div class="video-description" id="videoDescription"></div>
+
+            <div class="action-buttons">
+                <button class="btn btn-like" id="likeBtn" onclick="toggleLike()">
+                    <span></span>
+                    <span id="likeText">点赞</span>
+                </button>
+                <button class="btn btn-share" onclick="shareVideo()">
+                    <span></span>
+                    <span>分享</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 评论区 -->
+    <div class="comment-section">
+        <h3>评论 (<span id="commentCount">0</span>)</h3>
+
+        <!-- 评论输入框 -->
+        <div class="comment-form" id="commentForm">
+            <textarea id="commentInput" placeholder="发表评论..."></textarea>
+            <div class="form-footer">
+                <span class="login-tip" id="loginTip"></span>
+                <button class="btn-submit" onclick="submitComment()">发表评论</button>
+            </div>
+        </div>
+
+        <!-- 评论列表 -->
+        <ul class="comment-list" id="commentList">
+            <div class="empty-comments">暂无评论，来说两句吧</div>
+        </ul>
+    </div>
+</div>
+
+<script>
+    let videoId = null;
+    let videoData = null;
+    let isLiked = false;
+    let currentUser = null;
+    let replyingTo = null; // 当前正在回复的评论ID
+
+    window.onload = function() {
+        const params = new URLSearchParams(window.location.search);
+        let idParam = params.get('id');
+        if (!idParam || idParam === 'undefined') {
+            showError('视频 ID 不存在或无效，请从列表页重新进入');
+            return;
+        }
+        videoId = idParam;
+        loadCurrentUser().then(() => {
+            loadVideo();
+            loadComments();
+        });
+    };
+
+    async function loadCurrentUser() {
+        try {
+            const response = await fetch('/user/currentUser');
+            const result = await response.json();
+            if (result.status === 'success' && result.data) {
+                currentUser = result.data;
+                document.getElementById('loginTip').innerHTML = '已登录：<strong>' + currentUser.username + '</strong>';
+            } else {
+                document.getElementById('loginTip').innerHTML = '未登录？<a href="/login.html">点此登录</a>后评论';
+            }
+        } catch (error) {
+            console.error('加载用户信息失败:', error);
+        }
+    }
+
+    async function loadVideo() {
+        try {
+            const response = await fetch('/video/getVideoById?id=' + videoId);
+            const result = await response.json();
+            if (result.status === 'success' && result.data) {
+                videoData = result.data;
+                renderVideo(videoData);
+                // 记录访问
+                fetch('/video/view/' + videoId, { method: 'POST' });
+                // 检查点赞状态
+                checkLikeStatus();
+            } else {
+                showError('视频不存在或已被删除');
+            }
+        } catch (error) {
+            console.error('加载视频失败:', error);
+            showError('加载失败，请刷新重试');
+        }
+    }
+
+    function renderVideo(video) {
+        document.getElementById('videoTitle').textContent = video.title;
+        document.getElementById('videoDescription').textContent = video.description || '暂无描述';
+        document.getElementById('viewCount').textContent = video.viewCount || 0;
+        document.getElementById('likeCount').textContent = video.likeCount || 0;
+        document.getElementById('duration').textContent = formatDuration(video.duration);
+        if (video.publishTime) {
+            document.getElementById('publishTime').textContent = formatDate(video.publishTime);
+        }
+        renderPlayer(video.videoUrl);
+    }
+
+    function renderPlayer(videoUrl) {
+        const container = document.getElementById('videoContainer');
+        if (!videoUrl) {
+            container.innerHTML = '<div class="error-state">视频地址不存在</div>';
+            return;
+        }
+        if (videoUrl.includes('bilibili.com')) {
+            const match = videoUrl.match(/BV\w+/);
+            if (match) {
+                container.innerHTML = '<iframe src="//player.bilibili.com/player.html?bvid=' + match[0] + '&high_quality=1&danmaku=0" allowfullscreen="true"></iframe>';
+            } else {
+                container.innerHTML = '<div class="error-state">无法解析B站视频地址</div>';
+            }
+        } else if (videoUrl.match(/\.(mp4|webm|ogg)(\?.*)?$/i)) {
+            container.innerHTML = '<video controls autoplay><source src="' + videoUrl + '" type="video/mp4">您的浏览器不支持视频播放</video>';
+        } else {
+            container.innerHTML = '<iframe src="' + videoUrl + '" allowfullscreen="true"></iframe>';
+        }
+    }
+
+    function formatDuration(seconds) {
+        if (!seconds) return '00:00';
+        const m = Math.floor(seconds / 60);
+        const s = seconds % 60;
+        return m.toString().padStart(2, '0') + ':' + s.toString().padStart(2, '0');
+    }
+
+    async function checkLikeStatus() {
+        if (!currentUser) return;
+        try {
+            const response = await fetch('/video/isLiked?videoId=' + videoId);
+            const result = await response.json();
+            if (result.status === 'success' && result.data) {
+                isLiked = true;
+                document.getElementById('likeBtn').classList.add('liked');
+                document.getElementById('likeText').textContent = '已点赞';
+            }
+        } catch (e) { /* ignore */ }
+    }
+
+    async function toggleLike() {
+        if (!currentUser) {
+            alert('请先登录');
+            window.location.href = '/login.html';
+            return;
+        }
+        const url = isLiked ? '/video/unlike' : '/video/like';
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ videoId: parseInt(videoId) })
+            });
+            const result = await response.json();
+            if (result.status === 'success') {
+                isLiked = !isLiked;
+                document.getElementById('likeBtn').classList.toggle('liked', isLiked);
+                document.getElementById('likeText').textContent = isLiked ? '已点赞' : '点赞';
+                const currentLikes = parseInt(document.getElementById('likeCount').textContent);
+                document.getElementById('likeCount').textContent = isLiked ? currentLikes + 1 : currentLikes - 1;
+            } else {
+                alert(result.info || '操作失败');
+            }
+        } catch (error) {
+            alert('操作失败');
+        }
+    }
+
+    function shareVideo() {
+        const url = window.location.href;
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(url).then(() => alert('链接已复制'));
+        } else {
+            prompt('复制以下链接：', url);
+        }
+    }
+
+    function formatDate(dateStr) {
+        if (!dateStr) return '-';
+        const date = new Date(dateStr);
+        const y = date.getFullYear();
+        const mo = String(date.getMonth() + 1).padStart(2, '0');
+        const d = String(date.getDate()).padStart(2, '0');
+        const h = String(date.getHours()).padStart(2, '0');
+        const mi = String(date.getMinutes()).padStart(2, '0');
+        const s = String(date.getSeconds()).padStart(2, '0');
+        return y + '-' + mo + '-' + d + ' ' + h + ':' + mi + ':' + s;
+    }
+
+    function showError(msg) {
+        document.getElementById('videoContainer').innerHTML = '<div class="error-state"> ' + msg + '</div>';
+    }
+
+    // ==================== 评论区 ====================
+
+    async function loadComments() {
+        try {
+            const response = await fetch('/comment/listByVideo?videoId=' + videoId);
+            const result = await response.json();
+            if (result.status === 'success' && result.data) {
+                renderComments(result.data);
+            }
+        } catch (error) {
+            console.error('加载评论失败:', error);
+        }
+    }
+
+    function renderComments(comments) {
+        const container = document.getElementById('commentList');
+        if (!comments || comments.length === 0) {
+            container.innerHTML = '<div class="empty-comments">暂无评论，来说两句吧</div>';
+            document.getElementById('commentCount').textContent = '0';
+            return;
+        }
+
+        // 分离一级评论和回复
+        const topLevel = comments.filter(c => c.parentId === 0);
+        const replies = comments.filter(c => c.parentId !== 0);
+
+        document.getElementById('commentCount').textContent = comments.length;
+
+        let html = '';
+        topLevel.forEach(comment => {
+            html += renderCommentItem(comment);
+            // 找该评论下的所有回复
+            const childReplies = replies.filter(r => r.parentId === comment.id);
+            if (childReplies.length > 0) {
+                html += '<div class="replies">';
+                childReplies.forEach(reply => {
+                    html += '<div class="reply-item">' + renderCommentItem(reply) + '</div>';
+                });
+                html += '</div>';
+            }
+        });
+        container.innerHTML = html;
+    }
+
+    function renderCommentItem(comment) {
+        const avatarText = (comment.username || '匿').charAt(0);
+        const time = formatDate(comment.createTime);
+        return '<div class="comment-avatar">' + avatarText + '</div>' +
+            '<div class="comment-body">' +
+                '<div class="comment-header">' +
+                    '<span class="comment-username">' + escapeHtml(comment.username || '匿名用户') + '</span>' +
+                    '<span class="comment-time">' + time + '</span>' +
+                '</div>' +
+                '<div class="comment-content">' + escapeHtml(comment.content) + '</div>' +
+                '<div class="comment-actions">' +
+                    '<a onclick="showReplyForm(' + comment.id + ', \'' + escapeHtml(comment.username || '匿名用户') + '\')">回复</a>' +
+                '</div>' +
+            '</div>';
+    }
+
+    function showReplyForm(parentId, replyTo) {
+        // 移除已有回复框
+        const existing = document.querySelector('.reply-form');
+        if (existing) existing.remove();
+
+        replyingTo = parentId;
+        const formHtml = '<div class="reply-form">' +
+            '<textarea id="replyInput" placeholder="回复 ' + replyTo + '..."></textarea>' +
+            '<div class="reply-actions">' +
+                '<button class="btn-reply-submit" onclick="submitReply(' + parentId + ')">提交回复</button>' +
+                '<button class="btn-reply-cancel" onclick="cancelReply()">取消</button>' +
+            '</div>' +
+        '</div>';
+
+        // 找到对应评论项并在其下方插入
+        const commentItems = document.querySelectorAll('.comment-item');
+        // 简单处理：在所有replies区域的末尾或评论列表末尾插入
+        const allReplies = document.querySelectorAll('.replies');
+        let target = null;
+        allReplies.forEach(r => {
+            // 不精确匹配，直接插入到评论列表前面
+        });
+        // 插入到评论表单下方
+        document.getElementById('commentForm').insertAdjacentHTML('afterend', formHtml);
+    }
+
+    function cancelReply() {
+        const form = document.querySelector('.reply-form');
+        if (form) form.remove();
+        replyingTo = null;
+    }
+
+    async function submitComment() {
+        const content = document.getElementById('commentInput').value.trim();
+        if (!content) { alert('请输入评论内容'); return; }
+
+        try {
+            const response = await fetch('/comment/publish', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    content: content,
+                    videoId: parseInt(videoId),
+                    username: currentUser ? currentUser.username : '匿名用户'
+                })
+            });
+            const result = await response.json();
+            if (result.status === 'success') {
+                document.getElementById('commentInput').value = '';
+                loadComments();
+            } else {
+                alert(result.info || '发表评论失败');
+            }
+        } catch (error) {
+            alert('发表评论失败');
+        }
+    }
+
+    async function submitReply(parentId) {
+        const replyInput = document.getElementById('replyInput');
+        if (!replyInput) return;
+        const content = replyInput.value.trim();
+        if (!content) { alert('请输入回复内容'); return; }
+
+        try {
+            const response = await fetch('/comment/reply', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    content: content,
+                    videoId: parseInt(videoId),
+                    parentId: parentId,
+                    replyCommentId: parentId,
+                    username: currentUser ? currentUser.username : '匿名用户'
+                })
+            });
+            const result = await response.json();
+            if (result.status === 'success') {
+                cancelReply();
+                loadComments();
+            } else {
+                alert(result.info || '回复失败');
+            }
+        } catch (error) {
+            alert('回复失败');
+        }
+    }
+
+    function escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+</script>
+</body>
+</html>

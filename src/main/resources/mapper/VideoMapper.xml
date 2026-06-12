@@ -1,0 +1,697 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.easyboke.mappers.VideoMapper">
+    <!--实体映射-->
+    <resultMap id="base_result_map" type="com.easyboke.entity.po.Video">
+        <!--视频ID-->
+        <id column="id" property="id"/>
+        <!--视频标题-->
+        <result column="title" property="title"/>
+        <!--视频描述-->
+        <result column="description" property="description"/>
+        <!--视频地址-->
+        <result column="video_url" property="videoUrl"/>
+        <!--封面图片URL-->
+        <result column="cover_image" property="coverImage"/>
+        <!--视频时长（秒）-->
+        <result column="duration" property="duration"/>
+        <!--文件大小（字节）-->
+        <result column="file_size" property="fileSize"/>
+        <!--分类ID-->
+        <result column="category_id" property="categoryId"/>
+        <!--状态：0-草稿，1-已发布，2-已删除-->
+        <result column="status" property="status"/>
+        <!--播放次数-->
+        <result column="view_count" property="viewCount"/>
+        <!--男性访问量-->
+        <result column="male_view_count" property="maleViewCount"/>
+        <!--女性访问量-->
+        <result column="female_view_count" property="femaleViewCount"/>
+        <!--未知性别访问量-->
+        <result column="unknown_view_count" property="unknownViewCount"/>
+        <!--18岁以下访问量-->
+        <result column="age_under_18" property="ageUnder18"/>
+        <!--18-25岁访问量-->
+        <result column="age_18_25" property="age1825"/>
+        <!--26-35岁访问量-->
+        <result column="age_26_35" property="age2635"/>
+        <!--36-45岁访问量-->
+        <result column="age_36_45" property="age3645"/>
+        <!--46岁以上访问量-->
+        <result column="age_above_45" property="ageAbove45"/>
+        <!--点赞数-->
+        <result column="like_count" property="likeCount"/>
+        <!--评论数-->
+        <result column="comment_count" property="commentCount"/>
+        <!--发布时间-->
+        <result column="publish_time" property="publishTime"/>
+        <!--创建时间-->
+        <result column="create_time" property="createTime"/>
+        <!--更新时间-->
+        <result column="update_time" property="updateTime"/>
+   </resultMap>
+    <!--通用查询结果列-->
+<sql id="base_column_list">
+	id,title,description,video_url,cover_image,duration,file_size,category_id,status,view_count,male_view_count,female_view_count,unknown_view_count,age_under_18,age_18_25,age_26_35,age_36_45,age_above_45,like_count,comment_count,publish_time,create_time,update_time
+    </sql>
+
+    <!--基础查询条件-->
+    <sql id="base_query_condition">
+		<if test="query.id!=null">
+			and id=#{query.id} 
+		</if>
+		<if test="query.title!=null and query.title!=''">
+			and title=#{query.title} 
+		</if>
+		<if test="query.description!=null and query.description!=''">
+			and description=#{query.description} 
+		</if>
+		<if test="query.videoUrl!=null and query.videoUrl!=''">
+			and video_url=#{query.videoUrl} 
+		</if>
+		<if test="query.coverImage!=null and query.coverImage!=''">
+			and cover_image=#{query.coverImage} 
+		</if>
+		<if test="query.duration!=null">
+			and duration=#{query.duration} 
+		</if>
+		<if test="query.fileSize!=null">
+			and file_size=#{query.fileSize} 
+		</if>
+		<if test="query.categoryId!=null">
+			and category_id=#{query.categoryId} 
+		</if>
+		<if test="query.status!=null">
+			and status=#{query.status} 
+		</if>
+		<if test="query.viewCount!=null">
+			and view_count=#{query.viewCount} 
+		</if>
+		<if test="query.maleViewCount!=null">
+			and male_view_count=#{query.maleViewCount} 
+		</if>
+		<if test="query.femaleViewCount!=null">
+			and female_view_count=#{query.femaleViewCount} 
+		</if>
+		<if test="query.unknownViewCount!=null">
+			and unknown_view_count=#{query.unknownViewCount} 
+		</if>
+		<if test="query.ageUnder18!=null">
+			and age_under_18=#{query.ageUnder18} 
+		</if>
+		<if test="query.age1825!=null">
+			and age_18_25=#{query.age1825} 
+		</if>
+		<if test="query.age2635!=null">
+			and age_26_35=#{query.age2635} 
+		</if>
+		<if test="query.age3645!=null">
+			and age_36_45=#{query.age3645} 
+		</if>
+		<if test="query.ageAbove45!=null">
+			and age_above_45=#{query.ageAbove45} 
+		</if>
+		<if test="query.likeCount!=null">
+			and like_count=#{query.likeCount} 
+		</if>
+		<if test="query.commentCount!=null">
+			and comment_count=#{query.commentCount} 
+		</if>
+		<if test="query.publishTime!=null">
+			and publish_time=#{query.publishTime} 
+		</if>
+		<if test="query.createTime!=null">
+			and create_time=#{query.createTime} 
+		</if>
+		<if test="query.updateTime!=null">
+			and update_time=#{query.updateTime} 
+		</if>
+    </sql>
+    <!--扩展查询条件-->
+    <sql id="base_query_condition_extend">
+		<if test="query.titleFuzzy!=null and query.titleFuzzy!=''">
+			and title like concat('%',#{query.titleFuzzy},'%')
+		</if>
+		<if test="query.descriptionFuzzy!=null and query.descriptionFuzzy!=''">
+			and description like concat('%',#{query.descriptionFuzzy},'%')
+		</if>
+		<if test="query.videoUrlFuzzy!=null and query.videoUrlFuzzy!=''">
+			and video_url like concat('%',#{query.videoUrlFuzzy},'%')
+		</if>
+		<if test="query.coverImageFuzzy!=null and query.coverImageFuzzy!=''">
+			and cover_image like concat('%',#{query.coverImageFuzzy},'%')
+		</if>
+		<if test="query.publishTimeStart!=null and query.publishTimeStart!=''">
+			<![CDATA[ and  publish_time >= str_to_date(#{query.publishTimeStart},'%Y-%m-%d') ]]>
+		</if>
+		<if test="query.publishTimeEnd!=null and query.publishTimeEnd!=''">
+			<![CDATA[ and  publish_time < date_sub(str_to_date(#{query.publishTimeEnd},'%Y-%m-%d'),interval -1 day) ]]>
+		</if>
+		<if test="query.createTimeStart!=null and query.createTimeStart!=''">
+			<![CDATA[ and  create_time >= str_to_date(#{query.createTimeStart},'%Y-%m-%d') ]]>
+		</if>
+		<if test="query.createTimeEnd!=null and query.createTimeEnd!=''">
+			<![CDATA[ and  create_time < date_sub(str_to_date(#{query.createTimeEnd},'%Y-%m-%d'),interval -1 day) ]]>
+		</if>
+		<if test="query.updateTimeStart!=null and query.updateTimeStart!=''">
+			<![CDATA[ and  update_time >= str_to_date(#{query.updateTimeStart},'%Y-%m-%d') ]]>
+		</if>
+		<if test="query.updateTimeEnd!=null and query.updateTimeEnd!=''">
+			<![CDATA[ and  update_time < date_sub(str_to_date(#{query.updateTimeEnd},'%Y-%m-%d'),interval -1 day) ]]>
+		</if>
+    </sql>
+    <!--通用查询条件-->
+    <sql id="query_condition">
+		<where>
+			<include refid="base_query_condition"/>
+			<include refid="base_query_condition_extend"/>
+		</where>
+    </sql>
+    <!--查询列表-->
+	<select id="selectList" resultMap="base_result_map">
+		SELECT <include refid="base_column_list"/> FROM video <include refid="query_condition"/>
+		<choose>
+				<when test="query.orderBy!=null"> order by ${query.orderBy}</when>
+				<otherwise> order by publish_time desc</otherwise>
+			</choose>
+		<if test="query.simplePage!=null">limit #{query.simplePage.start},#{query.simplePage.end}</if>
+	</select>
+  <!--查询数量-->
+	<select id="selectCount"  resultType="java.lang.Integer">
+		SELECT count(1) FROM video <include refid="query_condition"/>
+	</select>
+    <!--插入(匹配有值的字段)-->
+	<insert id="insert"  parameterType="com.easyboke.entity.po.Video">
+		<selectKey keyProperty="bean.id" resultType="Integer" order="AFTER">
+			SELECT LAST_INSERT_ID();
+		</selectKey>
+		insert into video
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="bean.id!=null">
+				id,
+			</if>
+			<if test="bean.title!=null">
+				title,
+			</if>
+			<if test="bean.description!=null">
+				description,
+			</if>
+			<if test="bean.videoUrl!=null">
+				video_url,
+			</if>
+			<if test="bean.coverImage!=null">
+				cover_image,
+			</if>
+			<if test="bean.duration!=null">
+				duration,
+			</if>
+			<if test="bean.fileSize!=null">
+				file_size,
+			</if>
+			<if test="bean.categoryId!=null">
+				category_id,
+			</if>
+			<if test="bean.status!=null">
+				status,
+			</if>
+			<if test="bean.viewCount!=null">
+				view_count,
+			</if>
+			<if test="bean.maleViewCount!=null">
+				male_view_count,
+			</if>
+			<if test="bean.femaleViewCount!=null">
+				female_view_count,
+			</if>
+			<if test="bean.unknownViewCount!=null">
+				unknown_view_count,
+			</if>
+			<if test="bean.ageUnder18!=null">
+				age_under_18,
+			</if>
+			<if test="bean.age1825!=null">
+				age_18_25,
+			</if>
+			<if test="bean.age2635!=null">
+				age_26_35,
+			</if>
+			<if test="bean.age3645!=null">
+				age_36_45,
+			</if>
+			<if test="bean.ageAbove45!=null">
+				age_above_45,
+			</if>
+			<if test="bean.likeCount!=null">
+				like_count,
+			</if>
+			<if test="bean.commentCount!=null">
+				comment_count,
+			</if>
+			<if test="bean.publishTime!=null">
+				publish_time,
+			</if>
+			<if test="bean.createTime!=null">
+				create_time,
+			</if>
+			<if test="bean.updateTime!=null">
+				update_time,
+			</if>
+		</trim>
+		<trim prefix="values(" suffix=")" suffixOverrides=",">
+ 			<if test="bean.id!=null">
+ 				#{bean.id},
+			 </if>
+ 			<if test="bean.title!=null">
+ 				#{bean.title},
+			 </if>
+ 			<if test="bean.description!=null">
+ 				#{bean.description},
+			 </if>
+ 			<if test="bean.videoUrl!=null">
+ 				#{bean.videoUrl},
+			 </if>
+ 			<if test="bean.coverImage!=null">
+ 				#{bean.coverImage},
+			 </if>
+ 			<if test="bean.duration!=null">
+ 				#{bean.duration},
+			 </if>
+ 			<if test="bean.fileSize!=null">
+ 				#{bean.fileSize},
+			 </if>
+			<if test="bean.categoryId!=null">
+				category_id,
+			</if>
+			<if test="bean.status!=null">
+				status,
+			</if>
+			<if test="bean.viewCount!=null">
+				view_count,
+			</if>
+			<if test="bean.maleViewCount!=null">
+ 				#{bean.maleViewCount},
+			 </if>
+ 			<if test="bean.femaleViewCount!=null">
+ 				#{bean.femaleViewCount},
+			 </if>
+ 			<if test="bean.unknownViewCount!=null">
+ 				#{bean.unknownViewCount},
+			 </if>
+ 			<if test="bean.ageUnder18!=null">
+ 				#{bean.ageUnder18},
+			 </if>
+ 			<if test="bean.age1825!=null">
+ 				#{bean.age1825},
+			 </if>
+ 			<if test="bean.age2635!=null">
+ 				#{bean.age2635},
+			 </if>
+ 			<if test="bean.age3645!=null">
+ 				#{bean.age3645},
+			 </if>
+ 			<if test="bean.ageAbove45!=null">
+ 				#{bean.ageAbove45},
+			 </if>
+ 			<if test="bean.likeCount!=null">
+ 				#{bean.likeCount},
+			 </if>
+ 			<if test="bean.commentCount!=null">
+ 				#{bean.commentCount},
+			 </if>
+ 			<if test="bean.publishTime!=null">
+ 				#{bean.publishTime},
+			 </if>
+ 			<if test="bean.createTime!=null">
+ 				#{bean.createTime},
+			 </if>
+ 			<if test="bean.updateTime!=null">
+ 				#{bean.updateTime},
+			 </if>
+		 </trim>
+	</insert>
+    <!--插入或者更新(匹配有值的字段)-->
+	<insert id="insertOrUpdate"  parameterType="com.easyboke.entity.po.Video">
+		insert into video
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="bean.id!=null">
+				id,
+			</if>
+			<if test="bean.title!=null">
+				title,
+			</if>
+			<if test="bean.description!=null">
+				description,
+			</if>
+			<if test="bean.videoUrl!=null">
+				video_url,
+			</if>
+			<if test="bean.coverImage!=null">
+				cover_image,
+			</if>
+			<if test="bean.duration!=null">
+				duration,
+			</if>
+			<if test="bean.fileSize!=null">
+				file_size,
+			</if>
+			<if test="bean.categoryId!=null">
+				category_id,
+			</if>
+			<if test="bean.status!=null">
+				status,
+			</if>
+			<if test="bean.viewCount!=null">
+				view_count,
+			</if>
+			<if test="bean.maleViewCount!=null">
+				male_view_count,
+			</if>
+			<if test="bean.femaleViewCount!=null">
+				female_view_count,
+			</if>
+			<if test="bean.unknownViewCount!=null">
+				unknown_view_count,
+			</if>
+			<if test="bean.ageUnder18!=null">
+				age_under_18,
+			</if>
+			<if test="bean.age1825!=null">
+				age_18_25,
+			</if>
+			<if test="bean.age2635!=null">
+				age_26_35,
+			</if>
+			<if test="bean.age3645!=null">
+				age_36_45,
+			</if>
+			<if test="bean.ageAbove45!=null">
+				age_above_45,
+			</if>
+			<if test="bean.likeCount!=null">
+				like_count,
+			</if>
+			<if test="bean.commentCount!=null">
+				comment_count,
+			</if>
+			<if test="bean.publishTime!=null">
+				publish_time,
+			</if>
+			<if test="bean.createTime!=null">
+				create_time,
+			</if>
+			<if test="bean.updateTime!=null">
+				update_time,
+			</if>
+		</trim>
+		<trim prefix="values(" suffix=")" suffixOverrides=",">
+ 			<if test="bean.id!=null">
+ 				#{bean.id},
+			 </if>
+ 			<if test="bean.title!=null">
+ 				#{bean.title},
+			 </if>
+ 			<if test="bean.description!=null">
+ 				#{bean.description},
+			 </if>
+ 			<if test="bean.videoUrl!=null">
+ 				#{bean.videoUrl},
+			 </if>
+ 			<if test="bean.coverImage!=null">
+ 				#{bean.coverImage},
+			 </if>
+ 			<if test="bean.duration!=null">
+ 				#{bean.duration},
+			 </if>
+ 			<if test="bean.fileSize!=null">
+ 				#{bean.fileSize},
+			 </if>
+ 			<if test="bean.categoryId!=null">
+ 				#{bean.categoryId},
+			 </if>
+			<if test="bean.status!=null">
+				status =VALUES(status),
+			</if>
+ 			<if test="bean.viewCount!=null">
+ 				#{bean.viewCount},
+			 </if>
+ 			<if test="bean.maleViewCount!=null">
+ 				#{bean.maleViewCount},
+			 </if>
+ 			<if test="bean.femaleViewCount!=null">
+ 				#{bean.femaleViewCount},
+			 </if>
+ 			<if test="bean.unknownViewCount!=null">
+ 				#{bean.unknownViewCount},
+			 </if>
+ 			<if test="bean.ageUnder18!=null">
+ 				#{bean.ageUnder18},
+			 </if>
+ 			<if test="bean.age1825!=null">
+ 				#{bean.age1825},
+			 </if>
+ 			<if test="bean.age2635!=null">
+ 				#{bean.age2635},
+			 </if>
+ 			<if test="bean.age3645!=null">
+ 				#{bean.age3645},
+			 </if>
+ 			<if test="bean.ageAbove45!=null">
+ 				#{bean.ageAbove45},
+			 </if>
+ 			<if test="bean.likeCount!=null">
+ 				#{bean.likeCount},
+			 </if>
+ 			<if test="bean.commentCount!=null">
+ 				#{bean.commentCount},
+			 </if>
+ 			<if test="bean.publishTime!=null">
+ 				#{bean.publishTime},
+			 </if>
+ 			<if test="bean.createTime!=null">
+ 				#{bean.createTime},
+			 </if>
+ 			<if test="bean.updateTime!=null">
+ 				#{bean.updateTime},
+			 </if>
+		 </trim>
+		on DUPLICATE key update
+		<trim prefix="" suffix="" suffixOverrides=",">
+			<if test="bean.title!=null">
+				title =VALUES(title),
+			</if>
+			<if test="bean.description!=null">
+				description =VALUES(description),
+			</if>
+			<if test="bean.videoUrl!=null">
+				video_url =VALUES(video_url),
+			</if>
+			<if test="bean.coverImage!=null">
+				cover_image =VALUES(cover_image),
+			</if>
+			<if test="bean.duration!=null">
+				duration =VALUES(duration),
+			</if>
+			<if test="bean.fileSize!=null">
+				file_size =VALUES(file_size),
+			</if>
+			<if test="bean.categoryId!=null">
+				category_id =VALUES(category_id),
+			</if>
+			<if test="bean.status!=null">
+				status =VALUES(status),
+			</if>
+			<if test="bean.viewCount!=null">
+				view_count =VALUES(view_count),
+			</if>
+			<if test="bean.maleViewCount!=null">
+				male_view_count =VALUES(male_view_count),
+			</if>
+			<if test="bean.femaleViewCount!=null">
+				female_view_count =VALUES(female_view_count),
+			</if>
+			<if test="bean.unknownViewCount!=null">
+				unknown_view_count =VALUES(unknown_view_count),
+			</if>
+			<if test="bean.ageUnder18!=null">
+				age_under_18 =VALUES(age_under_18),
+			</if>
+			<if test="bean.age1825!=null">
+				age_18_25 =VALUES(age_18_25),
+			</if>
+			<if test="bean.age2635!=null">
+				age_26_35 =VALUES(age_26_35),
+			</if>
+			<if test="bean.age3645!=null">
+				age_36_45 =VALUES(age_36_45),
+			</if>
+			<if test="bean.ageAbove45!=null">
+				age_above_45 =VALUES(age_above_45),
+			</if>
+			<if test="bean.likeCount!=null">
+				like_count =VALUES(like_count),
+			</if>
+			<if test="bean.commentCount!=null">
+				comment_count =VALUES(comment_count),
+			</if>
+			<if test="bean.publishTime!=null">
+				publish_time =VALUES(publish_time),
+			</if>
+			<if test="bean.createTime!=null">
+				create_time =VALUES(create_time),
+			</if>
+			<if test="bean.updateTime!=null">
+				update_time =VALUES(update_time),
+			</if>
+
+		</trim>
+	</insert>
+	<!--添加(批量插入)-->
+	<insert id="insertBatch" parameterType="com.easyboke.entity.po.Video">
+		insert into video(title,description,video_url,cover_image,duration,file_size,category_id,status,view_count,male_view_count,female_view_count,unknown_view_count,age_under_18,age_18_25,age_26_35,age_36_45,age_above_45,like_count,comment_count,publish_time,create_time,update_time)values
+		<foreach collection="list" item="item" separator=",">
+			(#{item.title},#{item.description},#{item.videoUrl},#{item.coverImage},#{item.duration},#{item.fileSize},#{item.categoryId},#{item.status},#{item.viewCount},#{item.maleViewCount},#{item.femaleViewCount},#{item.unknownViewCount},#{item.ageUnder18},#{item.age1825},#{item.age2635},#{item.age3645},#{item.ageAbove45},#{item.likeCount},#{item.commentCount},#{item.publishTime},#{item.createTime},#{item.updateTime})
+		</foreach>
+	 </insert>
+	<!--批量插入或更新-->
+	<insert id="insertOrUpdateBatch" parameterType="com.easyboke.entity.po.Video">
+		insert into video(title,description,video_url,cover_image,duration,file_size,category_id,status,view_count,male_view_count,female_view_count,unknown_view_count,age_under_18,age_18_25,age_26_35,age_36_45,age_above_45,like_count,comment_count,publish_time,create_time,update_time)values
+		<foreach collection="list" item="item" separator=",">
+			(#{item.title},#{item.description},#{item.videoUrl},#{item.coverImage},#{item.duration},#{item.fileSize},#{item.categoryId},#{item.status},#{item.viewCount},#{item.maleViewCount},#{item.femaleViewCount},#{item.unknownViewCount},#{item.ageUnder18},#{item.age1825},#{item.age2635},#{item.age3645},#{item.ageAbove45},#{item.likeCount},#{item.commentCount},#{item.publishTime},#{item.createTime},#{item.updateTime})
+		</foreach>
+			on DUPLICATE key update
+            id= VALUES(id),title= VALUES(title),description= VALUES(description),video_url= VALUES(video_url),cover_image= VALUES(cover_image),duration= VALUES(duration),file_size= VALUES(file_size),category_id= VALUES(category_id),status= VALUES(status),view_count= VALUES(view_count),male_view_count= VALUES(male_view_count),female_view_count= VALUES(female_view_count),unknown_view_count= VALUES(unknown_view_count),age_under_18= VALUES(age_under_18),age_18_25= VALUES(age_18_25),age_26_35= VALUES(age_26_35),age_36_45= VALUES(age_36_45),age_above_45= VALUES(age_above_45),like_count= VALUES(like_count),comment_count= VALUES(comment_count),publish_time= VALUES(publish_time),create_time= VALUES(create_time),update_time= VALUES(update_time)
+	</insert>
+	<!-- 根据"Id"查询-->
+	<select id="selectById" resultMap="base_result_map">
+		select <include refid="base_column_list"/>  from video where id=#{id}
+	</select>
+	<!-- 根据"Id"更新-->
+	<update id="updateById" parameterType="com.easyboke.entity.po.Video">
+		update  video
+		<set>
+			<if test="bean.id!=null">
+			id=#{bean.id},
+			</if>
+			<if test="bean.title!=null">
+			title=#{bean.title},
+			</if>
+			<if test="bean.description!=null">
+			description=#{bean.description},
+			</if>
+			<if test="bean.videoUrl!=null">
+			video_url=#{bean.videoUrl},
+			</if>
+			<if test="bean.coverImage!=null">
+			cover_image=#{bean.coverImage},
+			</if>
+			<if test="bean.duration!=null">
+			duration=#{bean.duration},
+			</if>
+			<if test="bean.fileSize!=null">
+			file_size=#{bean.fileSize},
+			</if>
+			<if test="bean.categoryId!=null">
+				category_id=#{bean.categoryId},
+			</if>
+			<if test="bean.status!=null and bean.status!=''">
+				status=#{bean.status},
+			</if>
+			<if test="bean.viewCount!=null">
+				view_count=#{bean.viewCount},
+			</if>
+			<if test="bean.maleViewCount!=null">
+			male_view_count=#{bean.maleViewCount},
+			</if>
+			<if test="bean.femaleViewCount!=null">
+			female_view_count=#{bean.femaleViewCount},
+			</if>
+			<if test="bean.unknownViewCount!=null">
+			unknown_view_count=#{bean.unknownViewCount},
+			</if>
+			<if test="bean.ageUnder18!=null">
+			age_under_18=#{bean.ageUnder18},
+			</if>
+			<if test="bean.age1825!=null">
+			age_18_25=#{bean.age1825},
+			</if>
+			<if test="bean.age2635!=null">
+			age_26_35=#{bean.age2635},
+			</if>
+			<if test="bean.age3645!=null">
+			age_36_45=#{bean.age3645},
+			</if>
+			<if test="bean.ageAbove45!=null">
+			age_above_45=#{bean.ageAbove45},
+			</if>
+			<if test="bean.likeCount!=null">
+			like_count=#{bean.likeCount},
+			</if>
+			<if test="bean.commentCount!=null">
+			comment_count=#{bean.commentCount},
+			</if>
+			<if test="bean.publishTime!=null">
+			publish_time=#{bean.publishTime},
+			</if>
+			<if test="bean.createTime!=null">
+			create_time=#{bean.createTime},
+			</if>
+			<if test="bean.updateTime!=null">
+			update_time=#{bean.updateTime},
+			</if>
+		</set>
+		<where>
+			id=#{id}
+		</where>
+	</update>
+
+	<!-- 根据"Id"删除-->
+	<delete id="deleteById">
+		delete from video where id=#{id}
+	</delete>
+	<!-- 增加视频播放量 -->
+	<update id="incrementViewCount">
+		update video set view_count = view_count + 1 where id=#{id}
+	</update>
+
+	<update id="incrementMaleViewCount">
+		update video set male_view_count = male_view_count + 1 where id=#{id}
+	</update>
+
+	<update id="incrementFemaleViewCount">
+		update video set female_view_count = female_view_count + 1 where id=#{id}
+	</update>
+
+	<update id="incrementUnknownViewCount">
+		update video set unknown_view_count = unknown_view_count + 1 where id=#{id}
+	</update>
+
+	<update id="incrementAgeUnder18">
+		update video set age_under_18 = age_under_18 + 1 where id=#{id}
+	</update>
+
+	<update id="incrementAge1825">
+		update video set age_18_25 = age_18_25 + 1 where id=#{id}
+	</update>
+
+	<update id="incrementAge2635">
+		update video set age_26_35 = age_26_35 + 1 where id=#{id}
+	</update>
+
+	<update id="incrementAge3645">
+		update video set age_36_45 = age_36_45 + 1 where id=#{id}
+	</update>
+
+	<update id="incrementAgeAbove45">
+		update video set age_above_45 = age_above_45 + 1 where id=#{id}
+	</update>
+
+	<update id="incrementLikeCount">
+		update video set like_count = like_count + 1 where id=#{id}
+	</update>
+
+	<update id="decrementLikeCount">
+		update video set like_count = like_count - 1 where id=#{id} and like_count > 0
+	</update>
+
+
+</mapper>

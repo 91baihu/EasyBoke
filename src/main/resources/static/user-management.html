@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户管理 - Easy博客后台管理系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB',
+                'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background: #F5F6F7;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #12B7F5 0%, #0099FF 100%);
+            color: white;
+            padding: 20px 40px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: white;
+            color: #12B7F5;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255,255,255,0.3);
+        }
+
+        .btn-success {
+            background: #67C23A;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #5daf34;
+        }
+
+        .btn-danger {
+            background: #F56C6C;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #e85555;
+        }
+
+        .btn-warning {
+            background: #FF9500;
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background: #e68600;
+        }
+
+        .btn-secondary {
+            background: #909399;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #7d7f85;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .stats-bar {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: #FFFFFF;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .stat-icon.cyan {
+            background: #e0f7fa;
+            color: #00bcd4;
+        }
+
+        .stat-info h3 {
+            font-size: 24px;
+            color: #1A1A2E;
+            margin-bottom: 5px;
+        }
+
+        .stat-info p {
+            font-size: 14px;
+            color: #888888;
+        }
+
+        .toolbar {
+            background: #FFFFFF;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            flex: 1;
+        }
+
+        .search-box input,
+        .search-box select {
+            padding: 8px 12px;
+            border: 1px solid #dcdfe6;
+            border-radius: 6px;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.3s ease;
+            color: #333333;
+        }
+
+        .search-box input:focus,
+        .search-box select:focus {
+            border-color: #12B7F5;
+            box-shadow: 0 0 0 2px rgba(18, 183, 245, 0.15);
+        }
+
+        .search-box input {
+            min-width: 200px;
+        }
+
+        .table-container {
+            background: #FFFFFF;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: #F5F6F7;
+        }
+
+        th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            color: #1A1A2E;
+            font-size: 14px;
+            border-bottom: 2px solid #e4e7ed;
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #ebeef5;
+            font-size: 14px;
+            color: #333333;
+        }
+
+        tbody tr:hover {
+            background: #F5F7FA;
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-active {
+            background: #f0f9ff;
+            color: #67C23A;
+        }
+
+        .status-disabled {
+            background: #fef0f0;
+            color: #F56C6C;
+        }
+
+        .gender-badge {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .gender-male {
+            background: #e3f2fd;
+            color: #2196f3;
+        }
+
+        .gender-female {
+            background: #fce4ec;
+            color: #F56C6C;
+        }
+
+        .gender-unknown {
+            background: #F5F6F7;
+            color: #888888;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #888888;
+        }
+
+        .message {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 12px 24px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            z-index: 3000;
+            animation: slideDown 0.3s ease-out;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .message.success {
+            background: #67C23A;
+        }
+
+        .message.error {
+            background: #F56C6C;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #FFFFFF;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #ebeef5;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            font-size: 20px;
+            color: #1A1A2E;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #888888;
+            transition: color 0.3s ease;
+        }
+
+        .close-btn:hover {
+            color: #333333;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #1A1A2E;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .form-group label .required {
+            color: #F56C6C;
+            margin-left: 4px;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #dcdfe6;
+            border-radius: 6px;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.3s ease;
+            color: #333333;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            border-color: #12B7F5;
+            box-shadow: 0 0 0 2px rgba(18, 183, 245, 0.15);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .modal-footer {
+            padding: 20px;
+            border-top: 1px solid #ebeef5;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            gap: 10px;
+        }
+
+        .pagination button {
+            padding: 8px 16px;
+            border: 1px solid #dcdfe6;
+            background: #FFFFFF;
+            border-radius: 6px;
+            cursor: pointer;
+            color: #333333;
+            transition: all 0.3s ease;
+        }
+
+        .pagination button:hover:not(:disabled) {
+            border-color: #12B7F5;
+            color: #12B7F5;
+        }
+
+        .pagination button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .pagination span {
+            color: #555555;
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                padding: 15px 20px;
+            }
+
+            .header h1 {
+                font-size: 20px;
+            }
+
+            .container {
+                padding: 0 10px;
+            }
+
+            .toolbar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search-box {
+                flex-direction: column;
+            }
+
+            .stats-bar {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="header">
+    <h1>👥 用户管理</h1>
+    <div class="header-actions">
+        <a href="/admin-dashboard.html" class="btn btn-primary">
+            <span>🏠 返回导航</span>
+        </a>
+        <button class="btn btn-secondary" onclick="logout()">退出登录</button>
+    </div>
+</div>
+
+<div class="container">
+    <div class="stats-bar">
+        <div class="stat-card">
+            <div class="stat-icon cyan"></div>
+            <div class="stat-info">
+                <h3 id="totalCount">0</h3>
+                <p>用户总数</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="toolbar">
+        <div class="search-box">
+            <input type="text" id="searchKeyword" placeholder="搜索用户名或邮箱...">
+            <select id="filterStatus">
+                <option value="">全部状态</option>
+                <option value="0">禁用</option>
+                <option value="1">启用</option>
+            </select>
+            <button class="btn btn-success" onclick="searchUsers()">🔍 搜索</button>
+            <button class="btn btn-secondary" onclick="resetSearch()">重置</button>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <table>
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>头像</th>
+                <th>用户名</th>
+                <th>账号</th>
+                <th>性别</th>
+                <th>年龄</th>
+                <th>生日</th>
+                <th>状态</th>
+                <th>注册时间</th>
+                <th>操作</th>
+            </tr>
+            </thead>
+            <tbody id="userTableBody">
+            <tr>
+                <td colspan="10" class="empty-state">加载中...</td>
+            </tr>
+            </tbody>
+        </table>
+        <div class="pagination" id="pagination"></div>
+    </div>
+</div>
+
+<div class="modal" id="userModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="modalTitle">用户详情</h2>
+            <button class="close-btn" onclick="closeModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div id="userDetail"></div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal()">关闭</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentPage = 1;
+    let pageSize = 10;
+    let totalRecords = 0;
+
+    document.addEventListener('DOMContentLoaded', function() {
+        checkLogin();
+        loadUsers();
+    });
+
+    async function checkLogin() {
+        try {
+            const response = await fetch('/admin/currentAdmin');
+            const result = await response.json();
+
+            if (!result || result.status !== 'success' || !result.data) {
+                window.location.href = '/admin-login.html';
+            }
+        } catch (error) {
+            console.error('检查登录状态失败:', error);
+            window.location.href = '/admin-login.html';
+        }
+    }
+
+    async function loadUsers() {
+        showLoading();
+
+        try {
+            const keyword = document.getElementById('searchKeyword').value;
+            const status = document.getElementById('filterStatus').value;
+
+            let url = `/user/loadDataList?pageNo=${currentPage}&pageSize=${pageSize}`;
+
+            if (keyword) {
+                url += `&usernameFuzzy=${encodeURIComponent(keyword)}`;
+            }
+            if (status !== '') {
+                url += `&status=${status}`;
+            }
+
+            const response = await fetch(url);
+            const result = await response.json();
+
+            if (result && result.status === 'success') {
+                const data = result.data;
+                totalRecords = data.totalCount || 0;
+                renderTable(data.list || []);
+                renderPagination();
+                updateStats();
+            } else {
+                showMessage('加载用户列表失败', 'error');
+            }
+        } catch (error) {
+            console.error('加载用户列表失败:', error);
+            showMessage('网络错误，请稍后重试', 'error');
+        } finally {
+            hideLoading();
+        }
+    }
+
+    function renderTable(users) {
+        const tbody = document.getElementById('userTableBody');
+
+        if (!users || users.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="10" class="empty-state">暂无数据</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = users.map(user => {
+            const genderMap = {
+                0: { text: '未知', class: 'gender-unknown' },
+                1: { text: '男', class: 'gender-male' },
+                2: { text: '女', class: 'gender-female' }
+            };
+
+            const statusMap = {
+                0: { text: '禁用', class: 'status-disabled' },
+                1: { text: '启用', class: 'status-active' }
+            };
+
+            const gender = genderMap[user.gender] || genderMap[0];
+            const status = statusMap[user.status] || statusMap[1];
+            const registerTime = user.createTime ? formatDate(user.createTime) : '-';
+            const avatarHtml = user.avatar
+                ? `<img src="${user.avatar}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;" onerror="this.style.display='none'">`
+                : `<span style="color:#ccc;font-size:20px;">&#9679;</span>`;
+
+            return `
+                <tr>
+                    <td>${user.id}</td>
+                    <td>${avatarHtml}</td>
+                    <td>${escapeHtml(user.username)}</td>
+                    <td>${escapeHtml(user.account || '-')}</td>
+                    <td><span class="gender-badge ${gender.class}">${gender.text}</span></td>
+                    <td>${user.age || '-'}</td>
+                    <td>${user.birthday || '-'}</td>
+                    <td><span class="status-badge ${status.class}">${status.text}</span></td>
+                    <td>${registerTime}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn btn-warning btn-small" onclick="viewUser(${user.id})">查看</button>
+                            ${user.status === 1 ?
+                                `<button class="btn btn-danger btn-small" onclick="disableUser(${user.id})">禁用</button>` :
+                                `<button class="btn btn-success btn-small" onclick="enableUser(${user.id})">启用</button>`
+                            }
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    function renderPagination() {
+        const pagination = document.getElementById('pagination');
+        const totalPages = Math.ceil(totalRecords / pageSize);
+
+        if (totalPages <= 1) {
+            pagination.innerHTML = '';
+            return;
+        }
+
+        let html = `
+            <button onclick="changePage(1)" ${currentPage === 1 ? 'disabled' : ''}>首页</button>
+            <button onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>上一页</button>
+            <span>第 ${currentPage} / ${totalPages} 页，共 ${totalRecords} 条</span>
+            <button onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>下一页</button>
+            <button onclick="changePage(${totalPages})" ${currentPage === totalPages ? 'disabled' : ''}>末页</button>
+        `;
+
+        pagination.innerHTML = html;
+    }
+
+    function changePage(page) {
+        currentPage = page;
+        loadUsers();
+    }
+
+    function updateStats() {
+        document.getElementById('totalCount').textContent = totalRecords;
+    }
+
+    function searchUsers() {
+        currentPage = 1;
+        loadUsers();
+    }
+
+    function resetSearch() {
+        document.getElementById('searchKeyword').value = '';
+        document.getElementById('filterStatus').value = '';
+        currentPage = 1;
+        loadUsers();
+    }
+
+    async function viewUser(id) {
+        showLoading();
+
+        try {
+            const response = await fetch(`/user/getUserById?id=${id}`);
+            const result = await response.json();
+
+            if (result && result.status === 'success') {
+                const user = result.data;
+                const genderMap = { 0: '未知', 1: '男', 2: '女' };
+                const statusMap = { 0: '禁用', 1: '启用' };
+
+                const avatarHtml = user.avatar
+                    ? `<img src="${user.avatar}" style="width:60px;height:60px;border-radius:50%;object-fit:cover;margin-bottom:10px;">`
+                    : '<p style="color:#ccc;">未设置头像</p>';
+                const detailHtml = `
+                    <div style="line-height:2;text-align:center;">
+                        ${avatarHtml}
+                    </div>
+                    <div style="line-height:2;color:#333333;">
+                        <p><strong>用户ID：</strong>${user.id}</p>
+                        <p><strong>用户名：</strong>${escapeHtml(user.username)}</p>
+                        <p><strong>账号：</strong>${escapeHtml(user.account || '-')}</p>
+                        <p><strong>性别：</strong>${genderMap[user.gender] || '未知'}</p>
+                        <p><strong>年龄：</strong>${user.age || '-'}</p>
+                        <p><strong>状态：</strong>${statusMap[user.status] || '未知'}</p>
+                        <p><strong>注册时间：</strong>${formatDate(user.createTime)}</p>
+                        <p><strong>更新时间：</strong>${formatDate(user.updateTime)}</p>
+                    </div>
+                `;
+                document.getElementById('userDetail').innerHTML = detailHtml;
+                document.getElementById('modalTitle').textContent = '用户详情';
+                document.getElementById('userModal').classList.add('active');
+            } else {
+                showMessage('获取用户详情失败', 'error');
+            }
+        } catch (error) {
+            console.error('获取用户详情失败:', error);
+            showMessage('网络错误，请稍后重试', 'error');
+        } finally {
+            hideLoading();
+        }
+    }
+
+    function disableUser(id) {
+        toggleUserStatus(id, 0);
+    }
+
+    function enableUser(id) {
+        toggleUserStatus(id, 1);
+    }
+
+    async function toggleUserStatus(id, newStatus) {
+        const action = newStatus === 0 ? '禁用' : '启用';
+        if (!confirm(`确定要${action}这个用户吗？`)) {
+            return;
+        }
+        showLoading();
+        try {
+            const response = await fetch(`/admin/toggleUserStatus?userId=${id}&status=${newStatus}`, {
+                method: 'POST'
+            });
+            const result = await response.json();
+            if (result && result.status === 'success') {
+                showMessage(result.info || `${action}成功`, 'success');
+                loadUsers();
+            } else {
+                showMessage(result.info || '操作失败', 'error');
+            }
+        } catch (error) {
+            console.error(`${action}用户失败:`, error);
+            showMessage('网络错误，请稍后重试', 'error');
+        } finally {
+            hideLoading();
+        }
+    }
+
+
+    function closeModal() {
+        document.getElementById('userModal').classList.remove('active');
+    }
+
+    function logout() {
+        if (confirm('确定要退出登录吗？')) {
+            fetch('/admin/logout', { method: 'POST' })
+                .then(() => {
+                    window.location.href = '/admin-login.html';
+                });
+        }
+    }
+
+    function showLoading() {
+        document.body.style.cursor = 'wait';
+    }
+
+    function hideLoading() {
+        document.body.style.cursor = 'default';
+    }
+
+    function showMessage(message, type) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${type}`;
+        messageDiv.textContent = message;
+        document.body.appendChild(messageDiv);
+
+        setTimeout(() => {
+            messageDiv.remove();
+        }, 3000);
+    }
+
+    function formatDate(dateStr) {
+        if (!dateStr) return '-';
+        const date = new Date(dateStr);
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        const seconds = String(date.getSeconds()).padStart(2, '0');
+        return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+    }
+
+    function escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    document.getElementById('userModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeModal();
+        }
+    });
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeModal();
+        }
+    });
+</script>
+</body>
+</html>

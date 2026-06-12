@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>视频列表 - EasyBoke</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Microsoft YaHei', Arial, sans-serif; background: #F5F6F7; min-height: 100vh; }
+
+        /* Header — QQ style with backdrop blur */
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 15px 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #12B7F5;
+            cursor: pointer;
+        }
+        .nav-menu { display: flex; gap: 20px; }
+        .nav-menu a {
+            text-decoration: none;
+            color: #555555;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+        .nav-menu a:hover { color: #12B7F5; }
+        .user-info { display: flex; align-items: center; gap: 15px; }
+        .username { color: #12B7F5; font-weight: bold; }
+
+        .btn {
+            padding: 8px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        .btn-primary { background: #12B7F5; color: white; }
+        .btn-primary:hover { background: #0099FF; }
+        .btn-danger { background: #f56c6c; color: white; }
+        .btn-danger:hover { background: #e04a4a; }
+
+        .container { max-width: 1200px; margin: 30px auto; padding: 0 20px; }
+
+        /* Page title — QQ text primary */
+        .page-title {
+            color: #1A1A2E;
+            font-size: 28px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        /* Video card — QQ card style */
+        .video-card {
+            background: #FFFFFF;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+        }
+        .video-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+        }
+
+        /* Video cover — QQ blue gradient + play overlay */
+        .video-cover {
+            position: relative;
+            width: 100%;
+            height: 180px;
+            background: linear-gradient(135deg, #12B7F5, #0099FF);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 48px;
+            overflow: hidden;
+        }
+        /* Play button overlay — centered, appears on hover */
+        .video-cover::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0);
+            transition: background 0.3s;
+        }
+        .video-card:hover .video-cover::after {
+            background: rgba(0, 0, 0, 0.15);
+        }
+        .play-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.8);
+            width: 56px;
+            height: 56px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            color: #12B7F5;
+            opacity: 0;
+            transition: opacity 0.3s, transform 0.3s;
+            z-index: 1;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+        .video-card:hover .play-overlay {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+        /* Duration chip — absolute overlay on cover */
+        .duration-chip {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.65);
+            color: #FFFFFF;
+            font-size: 12px;
+            padding: 3px 8px;
+            border-radius: 4px;
+            z-index: 1;
+            letter-spacing: 0.5px;
+        }
+
+        .video-info { padding: 15px; }
+
+        /* Video title — QQ text primary */
+        .video-title {
+            font-size: 16px;
+            color: #1A1A2E;
+            margin-bottom: 10px;
+            font-weight: bold;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* Video description — QQ text secondary */
+        .video-description {
+            color: #555555;
+            font-size: 14px;
+            margin-bottom: 10px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* Video meta — QQ text tertiary */
+        .video-meta {
+            display: flex;
+            justify-content: space-between;
+            color: #888888;
+            font-size: 12px;
+        }
+        .video-stats { display: flex; gap: 15px; }
+
+        /* Loading state — QQ text tertiary */
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: #888888;
+            font-size: 18px;
+        }
+
+        /* Empty state — centered icon + text, QQ text tertiary */
+        .empty-state {
+            text-align: center;
+            padding: 60px 50px;
+            background: #FFFFFF;
+            border-radius: 12px;
+            color: #888888;
+        }
+        .empty-icon {
+            font-size: 64px;
+            display: block;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+        .empty-text {
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+<div class="header">
+    <div class="header-content">
+        <div class="logo" onclick="window.location.href='/index.html'">📝 EasyBoke</div>
+        <div class="nav-menu">
+            <a href="/index.html">首页</a>
+            <a href="/category.html">分类</a>
+            <a href="/tag.html">标签</a>
+            <a href="/video-list.html">视频</a>
+        </div>
+        <div class="user-info" id="userInfo">
+            <button class="btn btn-primary" onclick="window.location.href='/login.html'">登录</button>
+            <button class="btn btn-primary" onclick="window.location.href='/register.html'">注册</button>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <h1 class="page-title">🎥 视频中心</h1>
+    <div class="video-grid" id="videoList">
+        <div class="loading">加载中...</div>
+    </div>
+</div>
+
+<script>
+    let currentUser = null;
+
+    window.onload = function() {
+        loadCurrentUser();
+        loadVideos();
+    };
+
+    async function loadCurrentUser() {
+        try {
+            const response = await fetch('/user/currentUser');
+            const result = await response.json();
+            if (result.status === 'success' && result.data) {
+                currentUser = result.data;
+                const avatarHtml = currentUser.avatar
+                    ? `<img src="${currentUser.avatar}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;vertical-align:middle;" onerror="this.style.display='none'">`
+                    : '';
+                document.getElementById('userInfo').innerHTML = `
+                    <span class="username">${avatarHtml} ${currentUser.username}</span>
+                    <button class="btn btn-primary" onclick="window.location.href='/profile.html'">个人中心</button>
+                    <button class="btn btn-danger" onclick="logout()">退出</button>
+                `;
+            }
+        } catch (error) {
+            console.error('加载用户信息失败:', error);
+        }
+    }
+
+    async function loadVideos() {
+        try {
+            const response = await fetch('/video/loadDataList?pageNo=1&pageSize=100&status=1');
+            const result = await response.json();
+
+            if (result.status === 'success' && result.data && result.data.list) {
+                renderVideos(result.data.list);
+            } else {
+                document.getElementById('videoList').innerHTML = '<div class="empty-state"><span class="empty-icon">🎬</span><span class="empty-text">暂无视频</span></div>';
+            }
+        } catch (error) {
+            console.error('加载视频失败:', error);
+            document.getElementById('videoList').innerHTML = '<div class="empty-state"><span class="empty-icon">😞</span><span class="empty-text">加载失败，请刷新重试</span></div>';
+        }
+    }
+
+    function renderVideos(videos) {
+        if (videos.length === 0) {
+            document.getElementById('videoList').innerHTML = '<div class="empty-state"><span class="empty-icon">🎬</span><span class="empty-text">暂无视频</span></div>';
+            return;
+        }
+
+        const html = videos.map(video => {
+            const duration = video.duration ? formatDuration(video.duration) : '00:00';
+            return `
+                <div class="video-card" onclick="viewVideo(${video.id})">
+                    <div class="video-cover">
+                        <span class="play-overlay">▶</span>
+                        <span class="duration-chip">${duration}</span>
+                    </div>
+                    <div class="video-info">
+                        <h3 class="video-title">${escapeHtml(video.title)}</h3>
+                        <p class="video-description">${escapeHtml(video.description || '暂无描述')}</p>
+                        <div class="video-meta">
+                            <div class="video-stats">
+                                <span>👁️ ${video.viewCount || 0}</span>
+                                <span>❤️ ${video.likeCount || 0}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        document.getElementById('videoList').innerHTML = html;
+    }
+
+    function formatDuration(seconds) {
+        const minutes = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
+
+    // 跳转到播放页，携带视频 ID
+    function viewVideo(id) {
+        window.location.href = '/video-play.html?id=' + id;
+    }
+
+    async function logout() {
+        if (confirm('确定要退出登录吗？')) {
+            try {
+                await fetch('/user/logout', { method: 'POST' });
+                window.location.reload();
+            } catch (error) {
+                console.error('退出失败:', error);
+            }
+        }
+    }
+
+    function escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+</script>
+</body>
+</html>

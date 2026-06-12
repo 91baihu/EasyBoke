@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.easyboke.mappers.VideoLikeMapper">
+    <resultMap id="base_result_map" type="com.easyboke.entity.po.VideoLike">
+        <id column="id" property="id"/>
+        <result column="video_id" property="videoId"/>
+        <result column="user_id" property="userId"/>
+        <result column="create_time" property="createTime"/>
+    </resultMap>
+
+    <sql id="base_column_list">
+        id, video_id, user_id, create_time
+    </sql>
+
+    <insert id="insert" parameterType="com.easyboke.entity.po.VideoLike">
+        <selectKey keyProperty="bean.id" resultType="Integer" order="AFTER">
+            SELECT LAST_INSERT_ID();
+        </selectKey>
+        insert into video_like
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="bean.videoId != null"> video_id, </if>
+            <if test="bean.userId != null"> user_id, </if>
+            <if test="bean.createTime != null"> create_time, </if>
+        </trim>
+        <trim prefix="values(" suffix=")" suffixOverrides=",">
+            <if test="bean.videoId != null"> #{bean.videoId}, </if>
+            <if test="bean.userId != null"> #{bean.userId}, </if>
+            <if test="bean.createTime != null"> #{bean.createTime}, </if>
+        </trim>
+    </insert>
+
+    <select id="selectById" resultMap="base_result_map">
+        select <include refid="base_column_list"/> from video_like where id = #{id}
+    </select>
+
+    <update id="updateById">
+        update video_like
+        <set>
+            <if test="bean.videoId != null"> video_id = #{bean.videoId}, </if>
+            <if test="bean.userId != null"> user_id = #{bean.userId}, </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        delete from video_like where id = #{id}
+    </delete>
+
+    <select id="selectByVideoIdAndUserId" resultMap="base_result_map">
+        select <include refid="base_column_list"/> from video_like
+        where video_id = #{videoId} and user_id = #{userId}
+    </select>
+
+    <delete id="deleteByVideoIdAndUserId">
+        delete from video_like where video_id = #{videoId} and user_id = #{userId}
+    </delete>
+
+    <select id="countByVideoId" resultType="java.lang.Integer">
+        select count(1) from video_like where video_id = #{videoId}
+    </select>
+</mapper>

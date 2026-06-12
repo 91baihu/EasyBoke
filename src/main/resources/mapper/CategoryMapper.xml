@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.easyboke.mappers.CategoryMapper">
+    <!--实体映射-->
+    <resultMap id="base_result_map" type="com.easyboke.entity.po.Category">
+        <!--分类ID-->
+        <id column="id" property="id"/>
+        <!--分类名称-->
+        <result column="category_name" property="categoryName"/>
+        <!--排序-->
+        <result column="sort_order" property="sortOrder"/>
+        <!--分类描述-->
+        <result column="description" property="description"/>
+        <!--创建时间-->
+        <result column="create_time" property="createTime"/>
+   </resultMap>
+    <!--通用查询结果列-->
+<sql id="base_column_list">
+	id,category_name,sort_order,description,create_time
+    </sql>
+
+    <!--基础查询条件-->
+    <sql id="base_query_condition">
+		<if test="query.id!=null">
+			and id=#{query.id} 
+		</if>
+		<if test="query.categoryName!=null and query.categoryName!=''">
+			and category_name=#{query.categoryName} 
+		</if>
+		<if test="query.sortOrder!=null">
+			and sort_order=#{query.sortOrder} 
+		</if>
+		<if test="query.description!=null and query.description!=''">
+			and description=#{query.description} 
+		</if>
+		<if test="query.createTime!=null">
+			and create_time=#{query.createTime} 
+		</if>
+    </sql>
+    <!--扩展查询条件-->
+    <sql id="base_query_condition_extend">
+		<if test="query.categoryNameFuzzy!=null and query.categoryNameFuzzy!=''">
+			and category_name like concat('%',#{query.categoryNameFuzzy},'%')
+		</if>
+		<if test="query.descriptionFuzzy!=null and query.descriptionFuzzy!=''">
+			and description like concat('%',#{query.descriptionFuzzy},'%')
+		</if>
+		<if test="query.createTimeStart!=null and query.createTimeStart!=''">
+			<![CDATA[ and  create_time >= str_to_date(#{query.createTimeStart},'%Y-%m-%d') ]]>
+		</if>
+		<if test="query.createTimeEnd!=null and query.createTimeEnd!=''">
+			<![CDATA[ and  create_time < date_sub(str_to_date(#{query.createTimeEnd},'%Y-%m-%d'),interval -1 day) ]]>
+		</if>
+    </sql>
+    <!--通用查询条件-->
+    <sql id="query_condition">
+		<where>
+			<include refid="base_query_condition"/>
+			<include refid="base_query_condition_extend"/>
+		</where>
+    </sql>
+    <!--查询列表-->
+	<select id="selectList" resultMap="base_result_map">
+		SELECT <include refid="base_column_list"/> FROM category <include refid="query_condition"/>
+		<if test="query.orderBy!=null"> order by ${query.orderBy}</if>
+		<if test="query.simplePage!=null">limit #{query.simplePage.start},#{query.simplePage.end}</if>
+	</select>
+  <!--查询数量-->
+	<select id="selectCount"  resultType="java.lang.Integer">
+		SELECT count(1) FROM category <include refid="query_condition"/>
+	</select>
+    <!--插入(匹配有值的字段)-->
+	<insert id="insert"  parameterType="com.easyboke.entity.po.Category">
+		<selectKey keyProperty="bean.id" resultType="Integer" order="AFTER">
+			SELECT LAST_INSERT_ID();
+		</selectKey>
+		insert into category
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="bean.id!=null">
+				id,
+			</if>
+			<if test="bean.categoryName!=null">
+				category_name,
+			</if>
+			<if test="bean.sortOrder!=null">
+				sort_order,
+			</if>
+			<if test="bean.description!=null">
+				description,
+			</if>
+			<if test="bean.createTime!=null">
+				create_time,
+			</if>
+		</trim>
+		<trim prefix="values(" suffix=")" suffixOverrides=",">
+ 			<if test="bean.id!=null">
+ 				#{bean.id},
+			 </if>
+ 			<if test="bean.categoryName!=null">
+ 				#{bean.categoryName},
+			 </if>
+ 			<if test="bean.sortOrder!=null">
+ 				#{bean.sortOrder},
+			 </if>
+ 			<if test="bean.description!=null">
+ 				#{bean.description},
+			 </if>
+ 			<if test="bean.createTime!=null">
+ 				#{bean.createTime},
+			 </if>
+		 </trim>
+	</insert>
+    <!--插入或者更新(匹配有值的字段)-->
+	<insert id="insertOrUpdate"  parameterType="com.easyboke.entity.po.Category">
+		insert into category
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="bean.id!=null">
+				id,
+			</if>
+			<if test="bean.categoryName!=null">
+				category_name,
+			</if>
+			<if test="bean.sortOrder!=null">
+				sort_order,
+			</if>
+			<if test="bean.description!=null">
+				description,
+			</if>
+			<if test="bean.createTime!=null">
+				create_time,
+			</if>
+		</trim>
+		<trim prefix="values(" suffix=")" suffixOverrides=",">
+ 			<if test="bean.id!=null">
+ 				#{bean.id},
+			 </if>
+ 			<if test="bean.categoryName!=null">
+ 				#{bean.categoryName},
+			 </if>
+ 			<if test="bean.sortOrder!=null">
+ 				#{bean.sortOrder},
+			 </if>
+ 			<if test="bean.description!=null">
+ 				#{bean.description},
+			 </if>
+ 			<if test="bean.createTime!=null">
+ 				#{bean.createTime},
+			 </if>
+		 </trim>
+		on DUPLICATE key update
+		<trim prefix="" suffix="" suffixOverrides=",">
+			<if test="bean.categoryName!=null">
+				category_name =VALUES(category_name),
+			</if>
+			<if test="bean.sortOrder!=null">
+				sort_order =VALUES(sort_order),
+			</if>
+			<if test="bean.description!=null">
+				description =VALUES(description),
+			</if>
+			<if test="bean.createTime!=null">
+				create_time =VALUES(create_time),
+			</if>
+
+		</trim>
+	</insert>
+	<!--添加(批量插入)-->
+	<insert id="insertBatch" parameterType="com.easyboke.entity.po.Category">
+		insert into category(category_name,sort_order,description,create_time)values
+		<foreach collection="list" item="item" separator=",">
+			(#{item.categoryName},#{item.sortOrder},#{item.description},#{item.createTime})
+		</foreach>
+	 </insert>
+	<!--批量插入或更新-->
+	<insert id="insertOrUpdateBatch" parameterType="com.easyboke.entity.po.Category">
+		insert into category(category_name,sort_order,description,create_time)values
+		<foreach collection="list" item="item" separator=",">
+			(#{item.categoryName},#{item.sortOrder},#{item.description},#{item.createTime})
+		</foreach>
+			on DUPLICATE key update
+            id= VALUES(id),category_name= VALUES(category_name),sort_order= VALUES(sort_order),description= VALUES(description),create_time= VALUES(create_time)
+	</insert>
+	<!-- 根据"Id"查询-->
+	<select id="selectById" resultMap="base_result_map">
+		select <include refid="base_column_list"/>  from category where id=#{id}
+	</select>
+	<!-- 根据"Id"更新-->
+	<update id="updateById" parameterType="com.easyboke.entity.po.Category">
+		update  category
+		<set>
+			<if test="bean.id!=null">
+			id=#{bean.id},
+			</if>
+			<if test="bean.categoryName!=null">
+			category_name=#{bean.categoryName},
+			</if>
+			<if test="bean.sortOrder!=null">
+			sort_order=#{bean.sortOrder},
+			</if>
+			<if test="bean.description!=null">
+			description=#{bean.description},
+			</if>
+			<if test="bean.createTime!=null">
+			create_time=#{bean.createTime},
+			</if>
+		</set>
+		<where>
+			id=#{id}
+		</where>
+	</update>
+
+	<!-- 根据"Id"删除-->
+	<delete id="deleteById">
+		delete from category where id=#{id}
+	</delete>
+
+</mapper>

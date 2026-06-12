@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Easy博客后台管理系统</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: #F5F6F7; min-height: 100vh; display: flex;
+        }
+        .sidebar {
+            width: 240px; background: #1A1A2E; color: white; min-height: 100vh;
+            display: flex; flex-direction: column; position: fixed; top: 0; left: 0; bottom: 0;
+            z-index: 100; transition: width 0.3s ease; overflow: hidden;
+        }
+        .sidebar.collapsed { width: 64px; }
+        .sidebar.collapsed .sidebar-title,
+        .sidebar.collapsed .sidebar-user-info,
+        .sidebar.collapsed .sidebar-nav a span:not(.icon),
+        .sidebar.collapsed .sidebar-footer button span { display: none; }
+        .sidebar.collapsed .sidebar-nav a { justify-content: center; padding: 12px 0; }
+        .sidebar.collapsed .sidebar-nav a .icon { margin: 0; }
+        .sidebar.collapsed .sidebar-user { justify-content: center; }
+        .sidebar.collapsed .sidebar-header { justify-content: center; padding: 16px 0; }
+        .sidebar-toggle {
+            position: absolute; top: 8px; right: 8px;
+            width: 28px; height: 28px; background: rgba(255,255,255,0.1);
+            border: none; border-radius: 6px; color: rgba(255,255,255,0.6);
+            cursor: pointer; font-size: 14px; display: flex; align-items: center;
+            justify-content: center; transition: all 0.2s; z-index: 101;
+        }
+        .sidebar-toggle:hover { background: rgba(255,255,255,0.2); color: white; }
+        .sidebar.collapsed .sidebar-toggle { right: 18px; }
+        .sidebar-header {
+            padding: 24px 20px; border-bottom: 1px solid rgba(255,255,255,0.08);
+            display: flex; align-items: center; gap: 12px;
+        }
+        .sidebar-logo {
+            width: 40px; height: 40px; background: #12B7F5; border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 20px; font-weight: bold;
+        }
+        .sidebar-title { font-size: 18px; font-weight: 600; }
+        .sidebar-user {
+            padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.08);
+            display: flex; align-items: center; gap: 12px;
+        }
+        .sidebar-avatar {
+            width: 42px; height: 42px; border-radius: 50%; background: #12B7F5;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px; font-weight: bold; object-fit: cover;
+        }
+        .sidebar-user-info h4 { font-size: 14px; margin-bottom: 2px; }
+        .sidebar-user-info p { font-size: 12px; color: rgba(255,255,255,0.5); }
+        .sidebar-nav { flex: 1; padding: 12px 0; }
+        .sidebar-nav a {
+            display: flex; align-items: center; gap: 12px; padding: 12px 20px;
+            color: rgba(255,255,255,0.7); text-decoration: none; font-size: 14px;
+            transition: all 0.2s; border-left: 3px solid transparent;
+        }
+        .sidebar-nav a:hover, .sidebar-nav a.active {
+            background: rgba(255,255,255,0.06); color: white;
+            border-left-color: #12B7F5;
+        }
+        .sidebar-nav a .icon { font-size: 18px; width: 24px; text-align: center; }
+        .sidebar-footer { padding: 16px 20px; border-top: 1px solid rgba(255,255,255,0.08); }
+        .sidebar-footer button {
+            width: 100%; padding: 10px; background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.7);
+            border: none; border-radius: 8px; cursor: pointer; font-size: 14px; transition: all 0.2s;
+        }
+        .sidebar-footer button:hover { background: rgba(255,59,48,0.3); color: #FF3B30; }
+        .main-content {
+            margin-left: 240px; flex: 1; padding: 30px; min-height: 100vh;
+            transition: margin-left 0.3s ease;
+        }
+        .main-content.expanded { margin-left: 64px; }
+        @media (max-width: 768px) {
+            .sidebar { width: 64px; }
+            .sidebar .sidebar-title,
+            .sidebar .sidebar-user-info,
+            .sidebar .sidebar-nav a span:not(.icon),
+            .sidebar .sidebar-footer button span { display: none; }
+            .sidebar .sidebar-nav a { justify-content: center; padding: 12px 0; }
+            .main-content { margin-left: 64px; }
+            .main-content.expanded { margin-left: 64px; }
+        }
+        .page-header { margin-bottom: 30px; }
+        .page-header h1 { font-size: 28px; color: #1A1A2E; margin-bottom: 6px; }
+        .page-header p { color: #555555; font-size: 14px; }
+        .nav-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px; margin-bottom: 30px;
+        }
+        .nav-card {
+            background: #FFFFFF; border-radius: 12px; padding: 24px; text-decoration: none;
+            transition: all 0.3s; box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            position: relative; overflow: hidden;
+        }
+        .nav-card::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+            background: #12B7F5; transform: scaleX(0); transition: transform 0.3s;
+        }
+        .nav-card:hover { transform: translateY(-4px); box-shadow: 0 4px 16px rgba(0,0,0,0.12); }
+        .nav-card:hover::before { transform: scaleX(1); }
+        .nav-icon {
+            width: 56px; height: 56px; border-radius: 12px; display: flex;
+            align-items: center; justify-content: center; font-size: 28px; margin-bottom: 16px;
+        }
+        .nav-icon.blue { background: #E8F7FE; color: #12B7F5; }
+        .nav-icon.green { background: #E8F8EE; color: #07C160; }
+        .nav-icon.orange { background: #FFF4E8; color: #FF9500; }
+        .nav-icon.purple { background: #F3E8FF; color: #9C27B0; }
+        .nav-icon.red { background: #FFE8E8; color: #FF3B30; }
+        .nav-icon.cyan { background: #E8F4FF; color: #409EFF; }
+        .nav-title { font-size: 18px; font-weight: 600; color: #1A1A2E; margin-bottom: 8px; }
+        .nav-description { font-size: 13px; color: #555555; line-height: 1.5; margin-bottom: 12px; }
+        .nav-stats { display: flex; gap: 20px; padding-top: 12px; border-top: 1px solid #F3F4F6; }
+        .stat-value { font-size: 22px; font-weight: 700; color: #12B7F5; }
+        .stat-label { font-size: 11px; color: #888888; margin-top: 2px; }
+        .quick-actions {
+            background: #FFFFFF; border-radius: 12px; padding: 24px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        }
+        .quick-actions h2 { font-size: 18px; color: #1A1A2E; margin-bottom: 16px; }
+        .action-buttons { display: flex; gap: 12px; flex-wrap: wrap; }
+        .action-btn {
+            padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer;
+            font-size: 14px; font-weight: 500; transition: all 0.2s; text-decoration: none;
+            display: inline-flex; align-items: center; gap: 8px;
+        }
+        .action-btn.primary { background: #12B7F5; color: white; }
+        .action-btn.primary:hover { background: #0EA2DB; transform: translateY(-1px); }
+        .action-btn.secondary { background: #F5F6F7; color: #333333; }
+        .action-btn.secondary:hover { background: #E5E7EB; }
+        @media (max-width: 768px) {
+            .nav-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+<aside class="sidebar" id="sidebar">
+    <button class="sidebar-toggle" id="sidebarToggle" title="收起/展开导航" onclick="toggleSidebar()">◀</button>
+    <div class="sidebar-header">
+        <div class="sidebar-logo">E</div>
+        <span class="sidebar-title">Easy博客</span>
+    </div>
+    <div class="sidebar-user">
+        <img class="sidebar-avatar" id="sidebarAvatarImg" src="" alt="" style="display:none;">
+        <div class="sidebar-avatar" id="sidebarAvatarText">A</div>
+        <div class="sidebar-user-info">
+            <h4 id="sidebarName">管理员</h4>
+            <p>后台管理</p>
+        </div>
+    </div>
+    <nav class="sidebar-nav">
+        <a href="/admin-dashboard.html" class="active"><span class="icon">🏠</span> 仪表盘</a>
+        <a href="/article-management.html"><span class="icon">📝</span> 文章管理</a>
+        <a href="/video-management.html"><span class="icon">🎥</span> 视频管理</a>
+        <a href="/comment-management.html"><span class="icon">💬</span> 评论管理</a>
+        <a href="/category-management.html"><span class="icon">📂</span> 分类管理</a>
+        <a href="/tag-management.html"><span class="icon">🏷️</span> 标签管理</a>
+        <a href="/user-management.html"><span class="icon">👥</span> 用户管理</a>
+        <a href="/statistics.html"><span class="icon">📊</span> 访问统计</a>
+        <a href="/admin-profile.html"><span class="icon">👤</span> 个人中心</a>
+    </nav>
+    <div class="sidebar-footer">
+        <button onclick="logout()">退出登录</button>
+    </div>
+</aside>
+
+<div class="main-content" id="mainContent">
+    <div class="page-header">
+        <h1>仪表盘</h1>
+        <p>欢迎回来，以下是博客系统的运行概况</p>
+    </div>
+
+    <div class="nav-grid">
+        <a href="/article-management.html" class="nav-card">
+            <div class="nav-icon blue">📝</div>
+            <div class="nav-title">文章管理</div>
+            <div class="nav-description">管理博客文章，包括发布、编辑、删除和查看文章统计数据</div>
+            <div class="nav-stats">
+                <div class="stat-item">
+                    <div class="stat-value" id="articleCount">-</div>
+                    <div class="stat-label">文章总数</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="publishedCount">-</div>
+                    <div class="stat-label">已发布</div>
+                </div>
+            </div>
+        </a>
+
+        <a href="/video-management.html" class="nav-card">
+            <div class="nav-icon cyan">🎥</div>
+            <div class="nav-title">视频管理</div>
+            <div class="nav-description">管理博客视频，包括发布、编辑、删除和视频统计数据</div>
+            <div class="nav-stats">
+                <div class="stat-item">
+                    <div class="stat-value" id="videoCount">-</div>
+                    <div class="stat-label">视频总数</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="videoPublishedCount">-</div>
+                    <div class="stat-label">已发布</div>
+                </div>
+            </div>
+        </a>
+
+        <a href="/comment-management.html" class="nav-card">
+            <div class="nav-icon green">💬</div>
+            <div class="nav-title">评论管理</div>
+            <div class="nav-description">审核和管理用户评论，维护良好的互动环境</div>
+            <div class="nav-stats">
+                <div class="stat-item">
+                    <div class="stat-value" id="commentCount">-</div>
+                    <div class="stat-label">评论总数</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="pendingCount">-</div>
+                    <div class="stat-label">待审核</div>
+                </div>
+            </div>
+        </a>
+
+        <a href="/statistics.html" class="nav-card">
+            <div class="nav-icon orange">📊</div>
+            <div class="nav-title">访问统计</div>
+            <div class="nav-description">查看文章访问数据，分析用户性别和年龄分布</div>
+            <div class="nav-stats">
+                <div class="stat-item">
+                    <div class="stat-value" id="totalViews">-</div>
+                    <div class="stat-label">总浏览量</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="todayViews">-</div>
+                    <div class="stat-label">今日浏览</div>
+                </div>
+            </div>
+        </a>
+
+        <a href="/category-management.html" class="nav-card">
+            <div class="nav-icon purple">📂</div>
+            <div class="nav-title">分类管理</div>
+            <div class="nav-description">管理文章分类，组织内容结构</div>
+            <div class="nav-stats">
+                <div class="stat-item">
+                    <div class="stat-value" id="categoryCount">-</div>
+                    <div class="stat-label">分类数量</div>
+                </div>
+            </div>
+        </a>
+
+        <a href="/tag-management.html" class="nav-card">
+            <div class="nav-icon red">🏷️</div>
+            <div class="nav-title">标签管理</div>
+            <div class="nav-description">管理文章标签，方便内容检索</div>
+            <div class="nav-stats">
+                <div class="stat-item">
+                    <div class="stat-value" id="tagCount">-</div>
+                    <div class="stat-label">标签数量</div>
+                </div>
+            </div>
+        </a>
+
+        <a href="/user-management.html" class="nav-card">
+            <div class="nav-icon cyan">👥</div>
+            <div class="nav-title">用户管理</div>
+            <div class="nav-description">管理注册用户，查看用户信息和活动</div>
+            <div class="nav-stats">
+                <div class="stat-item">
+                    <div class="stat-value" id="userCount">-</div>
+                    <div class="stat-label">用户总数</div>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <div class="quick-actions">
+        <h2>快捷操作</h2>
+        <div class="action-buttons">
+            <a href="/article-management.html?action=add" class="action-btn primary">新增文章</a>
+            <a href="/video-management.html" class="action-btn primary">新增视频</a>
+            <a href="/comment-management.html?filter=pending" class="action-btn secondary">待审评论</a>
+            <a href="/admin-profile.html" class="action-btn secondary">个人中心</a>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        checkLogin();
+        loadStatistics();
+    });
+
+    async function checkLogin() {
+        try {
+            const response = await fetch('/admin/currentAdmin');
+            const result = await response.json();
+            if (!result || result.status !== 'success' || !result.data) {
+                window.location.href = '/admin-login.html';
+                return;
+            }
+            const admin = result.data;
+            document.getElementById('sidebarName').textContent = admin.nickname || admin.username || '管理员';
+            if (admin.avatar) {
+                document.getElementById('sidebarAvatarImg').src = admin.avatar;
+                document.getElementById('sidebarAvatarImg').style.display = 'block';
+                document.getElementById('sidebarAvatarText').style.display = 'none';
+            } else {
+                document.getElementById('sidebarAvatarImg').style.display = 'none';
+                document.getElementById('sidebarAvatarText').style.display = 'flex';
+                document.getElementById('sidebarAvatarText').textContent = (admin.nickname || admin.username || 'A')[0].toUpperCase();
+            }
+        } catch (error) {
+            window.location.href = '/admin-login.html';
+        }
+    }
+
+    async function loadStatistics() {
+        try {
+            const articleRes = await fetch('/article/loadDataList?pageNo=1&pageSize=1');
+            const articleResult = await articleRes.json();
+            if (articleResult && articleResult.status === 'success') {
+                document.getElementById('articleCount').textContent = articleResult.data.totalCount || 0;
+            }
+            const publishedRes = await fetch('/article/loadDataList?pageNo=1&pageSize=1&status=1');
+            const publishedResult = await publishedRes.json();
+            if (publishedResult && publishedResult.status === 'success') {
+                document.getElementById('publishedCount').textContent = publishedResult.data.totalCount || 0;
+            }
+            const videoRes = await fetch('/video/loadDataList?pageNo=1&pageSize=1');
+            const videoResult = await videoRes.json();
+            if (videoResult && videoResult.status === 'success') {
+                document.getElementById('videoCount').textContent = videoResult.data.totalCount || 0;
+            }
+            const videoPublishedRes = await fetch('/video/loadDataList?pageNo=1&pageSize=1&status=1');
+            const videoPublishedResult = await videoPublishedRes.json();
+            if (videoPublishedResult && videoPublishedResult.status === 'success') {
+                document.getElementById('videoPublishedCount').textContent = videoPublishedResult.data.totalCount || 0;
+            }
+            const commentRes = await fetch('/comment/loadDataList?pageNo=1&pageSize=1');
+            const commentResult = await commentRes.json();
+            if (commentResult && commentResult.status === 'success') {
+                document.getElementById('commentCount').textContent = commentResult.data.totalCount || 0;
+            }
+            const pendingRes = await fetch('/comment/loadDataList?pageNo=1&pageSize=1&status=0');
+            const pendingResult = await pendingRes.json();
+            if (pendingResult && pendingResult.status === 'success') {
+                document.getElementById('pendingCount').textContent = pendingResult.data.totalCount || 0;
+            }
+            const categoryRes = await fetch('/category/loadDataList?pageNo=1&pageSize=1');
+            const categoryResult = await categoryRes.json();
+            if (categoryResult && categoryResult.status === 'success') {
+                document.getElementById('categoryCount').textContent = categoryResult.data.totalCount || 0;
+            }
+            const tagRes = await fetch('/tag/loadDataList?pageNo=1&pageSize=1');
+            const tagResult = await tagRes.json();
+            if (tagResult && tagResult.status === 'success') {
+                document.getElementById('tagCount').textContent = tagResult.data.totalCount || 0;
+            }
+            const userRes = await fetch('/user/loadDataList?pageNo=1&pageSize=1');
+            const userResult = await userRes.json();
+            if (userResult && userResult.status === 'success') {
+                document.getElementById('userCount').textContent = userResult.data.totalCount || 0;
+            }
+            document.getElementById('totalViews').textContent = '-';
+            document.getElementById('todayViews').textContent = '-';
+        } catch (error) {
+            console.error('加载统计数据失败:', error);
+        }
+    }
+
+    // 侧边栏伸缩
+    function toggleSidebar() {
+        const sidebar = document.getElementById("sidebar");
+        const main = document.getElementById("mainContent");
+        const btn = document.getElementById("sidebarToggle");
+        const collapsed = sidebar.classList.toggle("collapsed");
+        main.classList.toggle("expanded");
+        btn.textContent = collapsed ? "▶" : "◀";
+        localStorage.setItem("sidebarCollapsed", collapsed ? "1" : "0");
+    }
+    // 恢复侧边栏状态
+    (function() {
+        if (localStorage.getItem("sidebarCollapsed") === "1") {
+            document.getElementById("sidebar").classList.add("collapsed");
+            document.getElementById("mainContent").classList.add("expanded");
+            document.getElementById("sidebarToggle").textContent = "▶";
+        }
+    })();
+    function logout() {
+        if (confirm('确定要退出登录吗？')) {
+            fetch('/admin/logout', { method: 'POST' })
+                .then(() => { window.location.href = '/admin-login.html'; });
+        }
+    }
+</script>
+</body>
+</html>

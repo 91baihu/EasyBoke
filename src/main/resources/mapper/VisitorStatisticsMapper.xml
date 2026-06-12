@@ -1,0 +1,430 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.easyboke.mappers.VisitorStatisticsMapper">
+    <!--实体映射-->
+    <resultMap id="base_result_map" type="com.easyboke.entity.po.VisitorStatistics">
+        <!--ID-->
+        <id column="id" property="id"/>
+        <!--访问日期-->
+        <result column="visit_date" property="visitDate"/>
+        <!--页面浏览量-->
+        <result column="pv_count" property="pvCount"/>
+        <!--独立访客数-->
+        <result column="uv_count" property="uvCount"/>
+        <!--男性访问量-->
+        <result column="male_count" property="maleCount"/>
+        <!--女性访问量-->
+        <result column="female_count" property="femaleCount"/>
+        <!--18岁以下访问量-->
+        <result column="age_under_18" property="ageUnder18"/>
+        <!--18-25岁访问量-->
+        <result column="age_18_25" property="age1825"/>
+        <!--26-35岁访问量-->
+        <result column="age_26_35" property="age2635"/>
+        <!--36-45岁访问量-->
+        <result column="age_36_45" property="age3645"/>
+        <!--46岁以上访问量-->
+        <result column="age_above_45" property="ageAbove45"/>
+        <!--创建时间-->
+        <result column="create_time" property="createTime"/>
+   </resultMap>
+    <!--通用查询结果列-->
+<sql id="base_column_list">
+	id,visit_date,pv_count,uv_count,male_count,female_count,age_under_18,age_18_25,age_26_35,age_36_45,age_above_45,create_time
+    </sql>
+
+    <!--基础查询条件-->
+    <sql id="base_query_condition">
+		<if test="query.id!=null">
+			and id=#{query.id} 
+		</if>
+		<if test="query.visitDate!=null">
+			and visit_date=#{query.visitDate} 
+		</if>
+		<if test="query.pvCount!=null">
+			and pv_count=#{query.pvCount} 
+		</if>
+		<if test="query.uvCount!=null">
+			and uv_count=#{query.uvCount} 
+		</if>
+		<if test="query.maleCount!=null">
+			and male_count=#{query.maleCount} 
+		</if>
+		<if test="query.femaleCount!=null">
+			and female_count=#{query.femaleCount} 
+		</if>
+		<if test="query.ageUnder18!=null">
+			and age_under_18=#{query.ageUnder18} 
+		</if>
+		<if test="query.age1825!=null">
+			and age_18_25=#{query.age1825} 
+		</if>
+		<if test="query.age2635!=null">
+			and age_26_35=#{query.age2635} 
+		</if>
+		<if test="query.age3645!=null">
+			and age_36_45=#{query.age3645} 
+		</if>
+		<if test="query.ageAbove45!=null">
+			and age_above_45=#{query.ageAbove45} 
+		</if>
+		<if test="query.createTime!=null">
+			and create_time=#{query.createTime} 
+		</if>
+    </sql>
+    <!--扩展查询条件-->
+    <sql id="base_query_condition_extend">
+		<if test="query.visitDateStart!=null and query.visitDateStart!=''">
+			<![CDATA[ and  visit_date >= str_to_date(#{query.visitDateStart},'%Y-%m-%d') ]]>
+		</if>
+		<if test="query.visitDateEnd!=null and query.visitDateEnd!=''">
+			<![CDATA[ and  visit_date < date_sub(str_to_date(#{query.visitDateEnd},'%Y-%m-%d'),interval -1 day) ]]>
+		</if>
+		<if test="query.createTimeStart!=null and query.createTimeStart!=''">
+			<![CDATA[ and  create_time >= str_to_date(#{query.createTimeStart},'%Y-%m-%d') ]]>
+		</if>
+		<if test="query.createTimeEnd!=null and query.createTimeEnd!=''">
+			<![CDATA[ and  create_time < date_sub(str_to_date(#{query.createTimeEnd},'%Y-%m-%d'),interval -1 day) ]]>
+		</if>
+    </sql>
+    <!--通用查询条件-->
+    <sql id="query_condition">
+		<where>
+			<include refid="base_query_condition"/>
+			<include refid="base_query_condition_extend"/>
+		</where>
+    </sql>
+    <!--查询列表-->
+	<select id="selectList" resultMap="base_result_map">
+		SELECT <include refid="base_column_list"/> FROM visitor_statistics <include refid="query_condition"/>
+		<if test="query.orderBy!=null"> order by ${query.orderBy}</if>
+		<if test="query.simplePage!=null">limit #{query.simplePage.start},#{query.simplePage.end}</if>
+	</select>
+  <!--查询数量-->
+	<select id="selectCount"  resultType="java.lang.Integer">
+		SELECT count(1) FROM visitor_statistics <include refid="query_condition"/>
+	</select>
+    <!--插入(匹配有值的字段)-->
+	<insert id="insert"  parameterType="com.easyboke.entity.po.VisitorStatistics">
+		<selectKey keyProperty="bean.id" resultType="Integer" order="AFTER">
+			SELECT LAST_INSERT_ID();
+		</selectKey>
+		insert into visitor_statistics
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="bean.id!=null">
+				id,
+			</if>
+			<if test="bean.visitDate!=null">
+				visit_date,
+			</if>
+			<if test="bean.pvCount!=null">
+				pv_count,
+			</if>
+			<if test="bean.uvCount!=null">
+				uv_count,
+			</if>
+			<if test="bean.maleCount!=null">
+				male_count,
+			</if>
+			<if test="bean.femaleCount!=null">
+				female_count,
+			</if>
+			<if test="bean.ageUnder18!=null">
+				age_under_18,
+			</if>
+			<if test="bean.age1825!=null">
+				age_18_25,
+			</if>
+			<if test="bean.age2635!=null">
+				age_26_35,
+			</if>
+			<if test="bean.age3645!=null">
+				age_36_45,
+			</if>
+			<if test="bean.ageAbove45!=null">
+				age_above_45,
+			</if>
+			<if test="bean.createTime!=null">
+				create_time,
+			</if>
+		</trim>
+		<trim prefix="values(" suffix=")" suffixOverrides=",">
+ 			<if test="bean.id!=null">
+ 				#{bean.id},
+			 </if>
+ 			<if test="bean.visitDate!=null">
+ 				#{bean.visitDate},
+			 </if>
+ 			<if test="bean.pvCount!=null">
+ 				#{bean.pvCount},
+			 </if>
+ 			<if test="bean.uvCount!=null">
+ 				#{bean.uvCount},
+			 </if>
+ 			<if test="bean.maleCount!=null">
+ 				#{bean.maleCount},
+			 </if>
+ 			<if test="bean.femaleCount!=null">
+ 				#{bean.femaleCount},
+			 </if>
+ 			<if test="bean.ageUnder18!=null">
+ 				#{bean.ageUnder18},
+			 </if>
+ 			<if test="bean.age1825!=null">
+ 				#{bean.age1825},
+			 </if>
+ 			<if test="bean.age2635!=null">
+ 				#{bean.age2635},
+			 </if>
+ 			<if test="bean.age3645!=null">
+ 				#{bean.age3645},
+			 </if>
+ 			<if test="bean.ageAbove45!=null">
+ 				#{bean.ageAbove45},
+			 </if>
+ 			<if test="bean.createTime!=null">
+ 				#{bean.createTime},
+			 </if>
+		 </trim>
+	</insert>
+    <!--插入或者更新(匹配有值的字段)-->
+	<insert id="insertOrUpdate"  parameterType="com.easyboke.entity.po.VisitorStatistics">
+		insert into visitor_statistics
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="bean.id!=null">
+				id,
+			</if>
+			<if test="bean.visitDate!=null">
+				visit_date,
+			</if>
+			<if test="bean.pvCount!=null">
+				pv_count,
+			</if>
+			<if test="bean.uvCount!=null">
+				uv_count,
+			</if>
+			<if test="bean.maleCount!=null">
+				male_count,
+			</if>
+			<if test="bean.femaleCount!=null">
+				female_count,
+			</if>
+			<if test="bean.ageUnder18!=null">
+				age_under_18,
+			</if>
+			<if test="bean.age1825!=null">
+				age_18_25,
+			</if>
+			<if test="bean.age2635!=null">
+				age_26_35,
+			</if>
+			<if test="bean.age3645!=null">
+				age_36_45,
+			</if>
+			<if test="bean.ageAbove45!=null">
+				age_above_45,
+			</if>
+			<if test="bean.createTime!=null">
+				create_time,
+			</if>
+		</trim>
+		<trim prefix="values(" suffix=")" suffixOverrides=",">
+ 			<if test="bean.id!=null">
+ 				#{bean.id},
+			 </if>
+ 			<if test="bean.visitDate!=null">
+ 				#{bean.visitDate},
+			 </if>
+ 			<if test="bean.pvCount!=null">
+ 				#{bean.pvCount},
+			 </if>
+ 			<if test="bean.uvCount!=null">
+ 				#{bean.uvCount},
+			 </if>
+ 			<if test="bean.maleCount!=null">
+ 				#{bean.maleCount},
+			 </if>
+ 			<if test="bean.femaleCount!=null">
+ 				#{bean.femaleCount},
+			 </if>
+ 			<if test="bean.ageUnder18!=null">
+ 				#{bean.ageUnder18},
+			 </if>
+ 			<if test="bean.age1825!=null">
+ 				#{bean.age1825},
+			 </if>
+ 			<if test="bean.age2635!=null">
+ 				#{bean.age2635},
+			 </if>
+ 			<if test="bean.age3645!=null">
+ 				#{bean.age3645},
+			 </if>
+ 			<if test="bean.ageAbove45!=null">
+ 				#{bean.ageAbove45},
+			 </if>
+ 			<if test="bean.createTime!=null">
+ 				#{bean.createTime},
+			 </if>
+		 </trim>
+		on DUPLICATE key update
+		<trim prefix="" suffix="" suffixOverrides=",">
+			<if test="bean.pvCount!=null">
+				pv_count =VALUES(pv_count),
+			</if>
+			<if test="bean.uvCount!=null">
+				uv_count =VALUES(uv_count),
+			</if>
+			<if test="bean.maleCount!=null">
+				male_count =VALUES(male_count),
+			</if>
+			<if test="bean.femaleCount!=null">
+				female_count =VALUES(female_count),
+			</if>
+			<if test="bean.ageUnder18!=null">
+				age_under_18 =VALUES(age_under_18),
+			</if>
+			<if test="bean.age1825!=null">
+				age_18_25 =VALUES(age_18_25),
+			</if>
+			<if test="bean.age2635!=null">
+				age_26_35 =VALUES(age_26_35),
+			</if>
+			<if test="bean.age3645!=null">
+				age_36_45 =VALUES(age_36_45),
+			</if>
+			<if test="bean.ageAbove45!=null">
+				age_above_45 =VALUES(age_above_45),
+			</if>
+			<if test="bean.createTime!=null">
+				create_time =VALUES(create_time),
+			</if>
+
+		</trim>
+	</insert>
+	<!--添加(批量插入)-->
+	<insert id="insertBatch" parameterType="com.easyboke.entity.po.VisitorStatistics">
+		insert into visitor_statistics(visit_date,pv_count,uv_count,male_count,female_count,age_under_18,age_18_25,age_26_35,age_36_45,age_above_45,create_time)values
+		<foreach collection="list" item="item" separator=",">
+			(#{item.visitDate},#{item.pvCount},#{item.uvCount},#{item.maleCount},#{item.femaleCount},#{item.ageUnder18},#{item.age1825},#{item.age2635},#{item.age3645},#{item.ageAbove45},#{item.createTime})
+		</foreach>
+	 </insert>
+	<!--批量插入或更新-->
+	<insert id="insertOrUpdateBatch" parameterType="com.easyboke.entity.po.VisitorStatistics">
+		insert into visitor_statistics(visit_date,pv_count,uv_count,male_count,female_count,age_under_18,age_18_25,age_26_35,age_36_45,age_above_45,create_time)values
+		<foreach collection="list" item="item" separator=",">
+			(#{item.visitDate},#{item.pvCount},#{item.uvCount},#{item.maleCount},#{item.femaleCount},#{item.ageUnder18},#{item.age1825},#{item.age2635},#{item.age3645},#{item.ageAbove45},#{item.createTime})
+		</foreach>
+			on DUPLICATE key update
+            id= VALUES(id),visit_date= VALUES(visit_date),pv_count= VALUES(pv_count),uv_count= VALUES(uv_count),male_count= VALUES(male_count),female_count= VALUES(female_count),age_under_18= VALUES(age_under_18),age_18_25= VALUES(age_18_25),age_26_35= VALUES(age_26_35),age_36_45= VALUES(age_36_45),age_above_45= VALUES(age_above_45),create_time= VALUES(create_time)
+	</insert>
+	<!-- 根据"Id"查询-->
+	<select id="selectById" resultMap="base_result_map">
+		select <include refid="base_column_list"/>  from visitor_statistics where id=#{id}
+	</select>
+	<!-- 根据"Id"更新-->
+	<update id="updateById" parameterType="com.easyboke.entity.po.VisitorStatistics">
+		update  visitor_statistics
+		<set>
+			<if test="bean.id!=null">
+			id=#{bean.id},
+			</if>
+			<if test="bean.visitDate!=null">
+			visit_date=#{bean.visitDate},
+			</if>
+			<if test="bean.pvCount!=null">
+			pv_count=#{bean.pvCount},
+			</if>
+			<if test="bean.uvCount!=null">
+			uv_count=#{bean.uvCount},
+			</if>
+			<if test="bean.maleCount!=null">
+			male_count=#{bean.maleCount},
+			</if>
+			<if test="bean.femaleCount!=null">
+			female_count=#{bean.femaleCount},
+			</if>
+			<if test="bean.ageUnder18!=null">
+			age_under_18=#{bean.ageUnder18},
+			</if>
+			<if test="bean.age1825!=null">
+			age_18_25=#{bean.age1825},
+			</if>
+			<if test="bean.age2635!=null">
+			age_26_35=#{bean.age2635},
+			</if>
+			<if test="bean.age3645!=null">
+			age_36_45=#{bean.age3645},
+			</if>
+			<if test="bean.ageAbove45!=null">
+			age_above_45=#{bean.ageAbove45},
+			</if>
+			<if test="bean.createTime!=null">
+			create_time=#{bean.createTime},
+			</if>
+		</set>
+		<where>
+			id=#{id}
+		</where>
+	</update>
+
+	<!-- 根据"Id"删除-->
+	<delete id="deleteById">
+		delete from visitor_statistics where id=#{id}
+	</delete>
+
+	<!-- 根据"VisitDate"查询-->
+	<select id="selectByVisitDate" resultMap="base_result_map">
+		select <include refid="base_column_list"/>  from visitor_statistics where visit_date=#{visitDate}
+	</select>
+	<!-- 根据"VisitDate"更新-->
+	<update id="updateByVisitDate" parameterType="com.easyboke.entity.po.VisitorStatistics">
+		update  visitor_statistics
+		<set>
+			<if test="bean.id!=null">
+			id=#{bean.id},
+			</if>
+			<if test="bean.visitDate!=null">
+			visit_date=#{bean.visitDate},
+			</if>
+			<if test="bean.pvCount!=null">
+			pv_count=#{bean.pvCount},
+			</if>
+			<if test="bean.uvCount!=null">
+			uv_count=#{bean.uvCount},
+			</if>
+			<if test="bean.maleCount!=null">
+			male_count=#{bean.maleCount},
+			</if>
+			<if test="bean.femaleCount!=null">
+			female_count=#{bean.femaleCount},
+			</if>
+			<if test="bean.ageUnder18!=null">
+			age_under_18=#{bean.ageUnder18},
+			</if>
+			<if test="bean.age1825!=null">
+			age_18_25=#{bean.age1825},
+			</if>
+			<if test="bean.age2635!=null">
+			age_26_35=#{bean.age2635},
+			</if>
+			<if test="bean.age3645!=null">
+			age_36_45=#{bean.age3645},
+			</if>
+			<if test="bean.ageAbove45!=null">
+			age_above_45=#{bean.ageAbove45},
+			</if>
+			<if test="bean.createTime!=null">
+			create_time=#{bean.createTime},
+			</if>
+		</set>
+		<where>
+			visit_date=#{visitDate}
+		</where>
+	</update>
+
+	<!-- 根据"VisitDate"删除-->
+	<delete id="deleteByVisitDate">
+		delete from visitor_statistics where visit_date=#{visitDate}
+	</delete>
+
+</mapper>

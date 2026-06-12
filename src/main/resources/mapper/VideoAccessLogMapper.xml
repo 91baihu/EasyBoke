@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.easyboke.mappers.VideoAccessLogMapper">
+    <resultMap id="base_result_map" type="com.easyboke.entity.po.VideoAccessLog">
+        <id column="id" property="id"/>
+        <result column="video_id" property="videoId"/>
+        <result column="user_id" property="userId"/>
+        <result column="ip_address" property="ipAddress"/>
+        <result column="user_agent" property="userAgent"/>
+        <result column="referer" property="referer"/>
+        <result column="access_time" property="accessTime"/>
+    </resultMap>
+
+    <sql id="base_column_list">
+        id, video_id, user_id, ip_address, user_agent, referer, access_time
+    </sql>
+
+    <insert id="insert" parameterType="com.easyboke.entity.po.VideoAccessLog">
+        <selectKey keyProperty="bean.id" resultType="Integer" order="AFTER">
+            SELECT LAST_INSERT_ID();
+        </selectKey>
+        insert into video_access_log
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="bean.videoId != null"> video_id, </if>
+            <if test="bean.userId != null"> user_id, </if>
+            <if test="bean.ipAddress != null"> ip_address, </if>
+            <if test="bean.userAgent != null"> user_agent, </if>
+            <if test="bean.referer != null"> referer, </if>
+            <if test="bean.accessTime != null"> access_time, </if>
+        </trim>
+        <trim prefix="values(" suffix=")" suffixOverrides=",">
+            <if test="bean.videoId != null"> #{bean.videoId}, </if>
+            <if test="bean.userId != null"> #{bean.userId}, </if>
+            <if test="bean.ipAddress != null"> #{bean.ipAddress}, </if>
+            <if test="bean.userAgent != null"> #{bean.userAgent}, </if>
+            <if test="bean.referer != null"> #{bean.referer}, </if>
+            <if test="bean.accessTime != null"> #{bean.accessTime}, </if>
+        </trim>
+    </insert>
+
+    <select id="selectById" resultMap="base_result_map">
+        select <include refid="base_column_list"/> from video_access_log where id = #{id}
+    </select>
+
+    <update id="updateById">
+        update video_access_log
+        <set>
+            <if test="bean.videoId != null"> video_id = #{bean.videoId}, </if>
+            <if test="bean.userId != null"> user_id = #{bean.userId}, </if>
+            <if test="bean.ipAddress != null"> ip_address = #{bean.ipAddress}, </if>
+            <if test="bean.userAgent != null"> user_agent = #{bean.userAgent}, </if>
+            <if test="bean.referer != null"> referer = #{bean.referer}, </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        delete from video_access_log where id = #{id}
+    </delete>
+
+    <!-- 检查同一IP在指定时间内是否已访问过该视频 -->
+    <select id="countByVideoIdAndIpInTime" resultType="java.lang.Integer">
+        SELECT count(1) FROM video_access_log
+        WHERE video_id = #{videoId} AND ip_address = #{ipAddress}
+        AND access_time >= #{sinceTime}
+    </select>
+
+    <!-- 按视频统计总访问量 -->
+    <select id="selectTotalViewsByVideo" resultType="java.util.HashMap">
+        SELECT v.id as video_id, v.title as video_title,
+               COUNT(al.id) as total_views,
+               COUNT(DISTINCT al.ip_address) as unique_ips,
+               COUNT(DISTINCT al.user_id) as unique_users
+        FROM video v
+        LEFT JOIN video_access_log al ON v.id = al.video_id
+        GROUP BY v.id, v.title
+        ORDER BY total_views DESC
+    </select>
+
+    <!-- 按视频统计日访问量 -->
+    <select id="selectDailyViewsByVideo" resultType="java.util.HashMap">
+        SELECT DATE(access_time) as date, COUNT(*) as views,
+               COUNT(DISTINCT ip_address) as unique_ips
+        FROM video_access_log
+        WHERE video_id = #{videoId}
+        <if test="startDate != null and startDate != ''">
+            AND access_time >= #{startDate}
+        </if>
+        <if test="endDate != null and endDate != ''">
+            AND access_time &lt;= #{endDate}
+        </if>
+        GROUP BY DATE(access_time)
+        ORDER BY date DESC
+    </select>
+
+    <!-- 统计视频访问用户分布（登录用户 vs 游客） -->
+    <select id="selectUserDistributionByVideo" resultType="java.util.HashMap">
+        SELECT
+            CASE WHEN user_id IS NULL OR user_id = 0 THEN '游客' ELSE '注册用户' END as user_type,
+            COUNT(*) as count
+        FROM video_access_log
+        WHERE video_id = #{videoId}
+        GROUP BY CASE WHEN user_id IS NULL OR user_id = 0 THEN '游客' ELSE '注册用户' END
+    </select>
+
+    <!-- 总体统计摘要 -->
+    <select id="selectStatsSummary" resultType="java.util.HashMap">
+        SELECT
+            COUNT(*) as total_access,
+            COUNT(DISTINCT video_id) as total_videos,
+            COUNT(DISTINCT ip_address) as unique_ips,
+            COUNT(DISTINCT DATE(access_time)) as active_days
+        FROM video_access_log
+    </select>
+</mapper>

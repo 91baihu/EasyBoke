@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文章标签 - EasyBoke</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: #F5F6F7;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            padding: 15px 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-content {
+            max-width: 1200px; margin: 0 auto; padding: 0 20px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+
+        .logo {
+            font-size: 24px; font-weight: bold; color: #12B7F5; cursor: pointer;
+        }
+
+        .nav-menu { display: flex; gap: 24px; align-items: center; }
+        .nav-menu a {
+            text-decoration: none; color: #555555; font-size: 15px; font-weight: 500;
+            transition: color 0.3s; padding-bottom: 4px; border-bottom: 2px solid transparent;
+        }
+        .nav-menu a:hover, .nav-menu a.active {
+            color: #12B7F5; border-bottom-color: #12B7F5;
+        }
+
+        .user-info { display: flex; align-items: center; gap: 12px; }
+        .username { color: #12B7F5; font-weight: 600; font-size: 14px; }
+
+        .btn {
+            padding: 8px 20px; border: none; border-radius: 8px;
+            cursor: pointer; font-size: 13px; font-weight: 500;
+            transition: all 0.3s; white-space: nowrap;
+        }
+        .btn-primary { background: #12B7F5; color: white; }
+        .btn-primary:hover { background: #0099FF; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(18,183,245,0.35); }
+        .btn-danger { background: #F56C6C; color: white; }
+        .btn-danger:hover { background: #e85555; transform: translateY(-1px); }
+        .btn-outline { background: white; color: #12B7F5; border: 1.5px solid #12B7F5; }
+        .btn-outline:hover { background: #12B7F5; color: white; }
+
+        .container { max-width: 1200px; margin: 30px auto; padding: 0 20px; }
+
+        /* 标签云卡片 */
+        .tag-section {
+            background: #FFFFFF; border-radius: 12px; padding: 28px 30px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08); margin-bottom: 24px;
+        }
+        .section-title {
+            color: #1A1A2E; font-size: 20px; font-weight: 600;
+            margin-bottom: 20px; display: flex; align-items: center; gap: 8px;
+        }
+        .section-title::before {
+            content: ''; display: inline-block; width: 4px; height: 20px;
+            background: #12B7F5; border-radius: 2px;
+        }
+
+        .tag-cloud { display: flex; flex-wrap: wrap; gap: 10px; }
+
+        .tag-item {
+            background: #F5F6F7; border-radius: 20px; padding: 8px 20px;
+            cursor: pointer; font-size: 14px; color: #333333;
+            border: 1.5px solid transparent; transition: all 0.25s;
+            user-select: none; font-weight: 500;
+        }
+        .tag-item:hover {
+            background: #E8F6FD; color: #12B7F5;
+            border-color: rgba(18,183,245,0.3); transform: translateY(-2px);
+        }
+        .tag-item.active {
+            background: #12B7F5; color: white; border-color: #12B7F5;
+            box-shadow: 0 4px 12px rgba(18,183,245,0.35);
+        }
+        .tag-count {
+            font-size: 12px; margin-left: 4px; opacity: 0.7;
+            font-weight: 400;
+        }
+
+        /* 文章列表 */
+        .article-section {
+            background: #FFFFFF; border-radius: 12px; padding: 28px 30px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08); margin-bottom: 24px;
+        }
+        .article-section .section-title { display: none; }
+        .article-section .section-title.visible { display: flex; }
+
+        .article-list { display: grid; gap: 16px; }
+
+        .article-card {
+            background: #FFFFFF; border-radius: 10px; padding: 20px 24px;
+            border: 1px solid #EBEDF0; cursor: pointer;
+            transition: all 0.25s;
+        }
+        .article-card:hover {
+            border-color: rgba(18,183,245,0.25);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+            transform: translateY(-1px);
+        }
+        .article-title {
+            font-size: 18px; color: #1A1A2E; margin-bottom: 8px; font-weight: 600;
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        }
+        .article-summary {
+            color: #555555; line-height: 1.6; margin-bottom: 12px;
+            font-size: 14px; overflow: hidden; text-overflow: ellipsis;
+            display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+        }
+        .article-meta {
+            display: flex; justify-content: space-between; align-items: center;
+            color: #888888; font-size: 13px;
+        }
+        .article-stats { display: flex; gap: 18px; }
+        .stat-item { display: flex; align-items: center; gap: 4px; color: #888888; }
+
+        .empty-state, .loading {
+            text-align: center; padding: 60px 20px; color: #888888;
+            font-size: 15px;
+        }
+        .empty-icon { font-size: 40px; display: block; margin-bottom: 12px; }
+
+        @media (max-width: 768px) {
+            .header-content { flex-wrap: wrap; gap: 10px; }
+            .nav-menu { gap: 12px; }
+            .nav-menu a { font-size: 13px; }
+            .article-title { font-size: 16px; }
+        }
+    </style>
+</head>
+<body>
+<div class="header">
+    <div class="header-content">
+        <div class="logo" onclick="window.location.href='/index.html'"> EasyBoke</div>
+        <div class="nav-menu">
+            <a href="/index.html">首页</a>
+            <a href="/category.html">分类</a>
+            <a href="/tag.html" class="active">标签</a>
+            <a href="/video-list.html">视频</a>
+        </div>
+        <div class="user-info" id="userInfo">
+            <button class="btn btn-primary" onclick="window.location.href='/login.html'">登录</button>
+            <button class="btn btn-outline" onclick="window.location.href='/register.html'">注册</button>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <!-- 标签云 -->
+    <div class="tag-section">
+        <h2 class="section-title">文章标签</h2>
+        <div class="tag-cloud" id="tagCloud">
+            <div class="loading">加载标签中...</div>
+        </div>
+    </div>
+
+    <!-- 标签对应文章 -->
+    <div class="article-section" id="articleSection" style="display:none;">
+        <h2 class="section-title" id="articleSectionTitle">标签文章</h2>
+        <div class="article-list" id="articleList"></div>
+    </div>
+</div>
+
+<script>
+    let currentUser = null;
+    let selectedTagId = null;
+
+    window.onload = function() {
+        loadCurrentUser();
+        loadTags();
+    };
+
+    async function loadCurrentUser() {
+        try {
+            const res = await fetch('/user/currentUser');
+            const result = await res.json();
+            if (result.status === 'success' && result.data) {
+                currentUser = result.data;
+                const avatar = currentUser.avatar
+                    ? '<img src="' + currentUser.avatar + '" style="width:30px;height:30px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:4px;" onerror="this.style.display=\'none\'">'
+                    : '';
+                document.getElementById('userInfo').innerHTML =
+                    '<span class="username">' + avatar + ' ' + escapeHtml(currentUser.username) + '</span>' +
+                    '<button class="btn btn-outline" onclick="window.location.href=\'/profile.html\'">个人中心</button>' +
+                    '<button class="btn btn-danger" onclick="logout()">退出</button>';
+            }
+        } catch (e) { /* ignore */ }
+    }
+
+    async function loadTags() {
+        try {
+            const res = await fetch('/tag/loadDataList?pageNo=1&pageSize=100');
+            const result = await res.json();
+            if (result.status === 'success' && result.data && result.data.list) {
+                renderTags(result.data.list);
+            } else {
+                document.getElementById('tagCloud').innerHTML = '<div class="empty-state"><span class="empty-icon">🏷️</span>暂无标签</div>';
+            }
+        } catch (e) {
+            document.getElementById('tagCloud').innerHTML = '<div class="empty-state">加载失败，请刷新重试</div>';
+        }
+    }
+
+    function renderTags(tags) {
+        if (!tags.length) {
+            document.getElementById('tagCloud').innerHTML = '<div class="empty-state"><span class="empty-icon">🏷️</span>暂无标签</div>';
+            return;
+        }
+        document.getElementById('tagCloud').innerHTML = tags.map(function(t) {
+            var count = t.useCount ? ' <span class="tag-count">' + t.useCount + '</span>' : '';
+            return '<div class="tag-item" onclick="selectTag(' + t.id + ', \'' + escapeHtml(t.tagName || '') + '\')" data-tag-id="' + t.id + '">#' + escapeHtml(t.tagName || '未知标签') + count + '</div>';
+        }).join('');
+    }
+
+    function selectTag(tagId, tagName) {
+        selectedTagId = tagId;
+        var items = document.querySelectorAll('.tag-item');
+        items.forEach(function(el) { el.classList.remove('active'); });
+        var active = document.querySelector('[data-tag-id="' + tagId + '"]');
+        if (active) active.classList.add('active');
+
+        var section = document.getElementById('articleSection');
+        section.style.display = 'block';
+        var title = document.getElementById('articleSectionTitle');
+        title.textContent = '标签：' + tagName;
+        title.classList.add('visible');
+        loadArticles();
+    }
+
+    async function loadArticles() {
+        if (!selectedTagId) return;
+        var list = document.getElementById('articleList');
+        list.innerHTML = '<div class="loading">加载中...</div>';
+
+        try {
+            var res = await fetch('/article/listByTag?tagId=' + selectedTagId + '&status=1');
+            var result = await res.json();
+            if (result.status === 'success' && result.data && result.data.length > 0) {
+                renderArticles(result.data);
+            } else {
+                list.innerHTML = '<div class="empty-state"><span class="empty-icon">📄</span>该标签下暂无文章</div>';
+            }
+        } catch (e) {
+            list.innerHTML = '<div class="empty-state">加载失败，请刷新重试</div>';
+        }
+    }
+
+    function renderArticles(articles) {
+        document.getElementById('articleList').innerHTML = articles.map(function(a) {
+            var time = a.publishTime ? formatDate(a.publishTime) : '';
+            return '<div class="article-card" onclick="viewArticle(' + a.id + ')">' +
+                '<h2 class="article-title">' + escapeHtml(a.title) + '</h2>' +
+                '<p class="article-summary">' + escapeHtml(a.summary || '暂无摘要') + '</p>' +
+                '<div class="article-meta">' +
+                    '<span>' + time + '</span>' +
+                    '<div class="article-stats">' +
+                        '<span class="stat-item">👁️ ' + (a.viewCount || 0) + '</span>' +
+                        '<span class="stat-item">💬 ' + (a.commentCount || 0) + '</span>' +
+                        '<span class="stat-item">❤️ ' + (a.likeCount || 0) + '</span>' +
+                    '</div>' +
+                '</div>' +
+            '</div>';
+        }).join('');
+    }
+
+    function viewArticle(id) {
+        window.location.href = '/article-detail.html?id=' + id;
+    }
+
+    async function logout() {
+        if (confirm('确定要退出登录吗？')) {
+            try { await fetch('/user/logout', { method: 'POST' }); } catch (e) {}
+            window.location.reload();
+        }
+    }
+
+    function formatDate(d) {
+        if (!d) return '-';
+        var dt = new Date(d);
+        return dt.getFullYear() + '-' +
+            String(dt.getMonth()+1).padStart(2,'0') + '-' +
+            String(dt.getDate()).padStart(2,'0') + ' ' +
+            String(dt.getHours()).padStart(2,'0') + ':' +
+            String(dt.getMinutes()).padStart(2,'0') + ':' +
+            String(dt.getSeconds()).padStart(2,'0');
+    }
+
+    function escapeHtml(text) {
+        if (!text) return '';
+        var div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,447 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.easyboke.mappers.CommentMapper">
+    <!--实体映射-->
+    <resultMap id="base_result_map" type="com.easyboke.entity.po.Comment">
+        <!--评论ID-->
+        <id column="id" property="id"/>
+        <!--评论内容-->
+        <result column="content" property="content"/>
+        <!--评论者ID，0表示游客-->
+        <result column="user_id" property="userId"/>
+        <!--评论者用户名（游客填写）-->
+        <result column="username" property="username"/>
+        <!--关联文章ID-->
+        <result column="article_id" property="articleId"/>
+        <!--关联视频ID-->
+        <result column="video_id" property="videoId"/>
+        <!--父评论ID，0表示一级评论-->
+        <result column="parent_id" property="parentId"/>
+        <!--回复的评论ID-->
+        <result column="reply_comment_id" property="replyCommentId"/>
+        <!--状态：0-待审核，1-已通过，2-已删除-->
+        <result column="status" property="status"/>
+        <!--点赞数-->
+        <result column="like_count" property="likeCount"/>
+        <!--评论IP-->
+        <result column="ip_address" property="ipAddress"/>
+        <!--评论时间-->
+        <result column="create_time" property="createTime"/>
+        <!--更新时间-->
+        <result column="update_time" property="updateTime"/>
+   </resultMap>
+    <!--通用查询结果列-->
+<sql id="base_column_list">
+	id,content,user_id,username,article_id,video_id,parent_id,reply_comment_id,status,like_count,ip_address,create_time,update_time
+    </sql>
+
+    <!--基础查询条件-->
+    <sql id="base_query_condition">
+		<if test="query.id!=null">
+			and id=#{query.id} 
+		</if>
+		<if test="query.content!=null and query.content!=''">
+			and content=#{query.content} 
+		</if>
+		<if test="query.userId!=null">
+			and user_id=#{query.userId} 
+		</if>
+		<if test="query.username!=null and query.username!=''">
+			and username=#{query.username} 
+		</if>
+		<if test="query.articleId!=null">
+			and article_id=#{query.articleId} 
+		</if>
+		<if test="query.videoId!=null">
+			and video_id=#{query.videoId} 
+		</if>
+		<if test="query.parentId!=null">
+			and parent_id=#{query.parentId} 
+		</if>
+		<if test="query.replyCommentId!=null">
+			and reply_comment_id=#{query.replyCommentId} 
+		</if>
+		<if test="query.status!=null">
+			and status=#{query.status} 
+		</if>
+		<if test="query.likeCount!=null">
+			and like_count=#{query.likeCount} 
+		</if>
+		<if test="query.ipAddress!=null and query.ipAddress!=''">
+			and ip_address=#{query.ipAddress} 
+		</if>
+		<if test="query.createTime!=null">
+			and create_time=#{query.createTime} 
+		</if>
+		<if test="query.updateTime!=null">
+			and update_time=#{query.updateTime} 
+		</if>
+    </sql>
+    <!--扩展查询条件-->
+    <sql id="base_query_condition_extend">
+		<if test="query.contentFuzzy!=null and query.contentFuzzy!=''">
+			and content like concat('%',#{query.contentFuzzy},'%')
+		</if>
+		<if test="query.usernameFuzzy!=null and query.usernameFuzzy!=''">
+			and username like concat('%',#{query.usernameFuzzy},'%')
+		</if>
+		<if test="query.ipAddressFuzzy!=null and query.ipAddressFuzzy!=''">
+			and ip_address like concat('%',#{query.ipAddressFuzzy},'%')
+		</if>
+		<if test="query.createTimeStart!=null and query.createTimeStart!=''">
+			<![CDATA[ and  create_time >= str_to_date(#{query.createTimeStart},'%Y-%m-%d') ]]>
+		</if>
+		<if test="query.createTimeEnd!=null and query.createTimeEnd!=''">
+			<![CDATA[ and  create_time < date_sub(str_to_date(#{query.createTimeEnd},'%Y-%m-%d'),interval -1 day) ]]>
+		</if>
+		<if test="query.updateTimeStart!=null and query.updateTimeStart!=''">
+			<![CDATA[ and  update_time >= str_to_date(#{query.updateTimeStart},'%Y-%m-%d') ]]>
+		</if>
+		<if test="query.updateTimeEnd!=null and query.updateTimeEnd!=''">
+			<![CDATA[ and  update_time < date_sub(str_to_date(#{query.updateTimeEnd},'%Y-%m-%d'),interval -1 day) ]]>
+		</if>
+    </sql>
+    <!--通用查询条件-->
+    <sql id="query_condition">
+		<where>
+			<include refid="base_query_condition"/>
+			<include refid="base_query_condition_extend"/>
+		</where>
+    </sql>
+    <!--查询列表-->
+	<select id="selectList" resultMap="base_result_map">
+		SELECT <include refid="base_column_list"/> FROM comment <include refid="query_condition"/>
+		<choose>
+				<when test="query.orderBy!=null"> order by ${query.orderBy}</when>
+				<otherwise> order by create_time desc</otherwise>
+			</choose>
+		<if test="query.simplePage!=null">limit #{query.simplePage.start},#{query.simplePage.end}</if>
+	</select>
+  <!--查询数量-->
+	<select id="selectCount"  resultType="java.lang.Integer">
+		SELECT count(1) FROM comment <include refid="query_condition"/>
+	</select>
+    <!--插入(匹配有值的字段)-->
+	<insert id="insert"  parameterType="com.easyboke.entity.po.Comment">
+		<selectKey keyProperty="bean.id" resultType="Integer" order="AFTER">
+			SELECT LAST_INSERT_ID();
+		</selectKey>
+		insert into comment
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="bean.id!=null">
+				id,
+			</if>
+			<if test="bean.content!=null">
+				content,
+			</if>
+			<if test="bean.userId!=null">
+				user_id,
+			</if>
+			<if test="bean.username!=null">
+				username,
+			</if>
+			<if test="bean.articleId!=null">
+				article_id,
+			</if>
+			<if test="bean.videoId!=null">
+				video_id,
+			</if>
+			<if test="bean.parentId!=null">
+				parent_id,
+			</if>
+			<if test="bean.replyCommentId!=null">
+				reply_comment_id,
+			</if>
+			<if test="bean.status!=null">
+				status,
+			</if>
+			<if test="bean.likeCount!=null">
+				like_count,
+			</if>
+			<if test="bean.ipAddress!=null">
+				ip_address,
+			</if>
+			<if test="bean.createTime!=null">
+				create_time,
+			</if>
+			<if test="bean.updateTime!=null">
+				update_time,
+			</if>
+		</trim>
+		<trim prefix="values(" suffix=")" suffixOverrides=",">
+ 			<if test="bean.id!=null">
+ 				#{bean.id},
+			 </if>
+ 			<if test="bean.content!=null">
+ 				#{bean.content},
+			 </if>
+ 			<if test="bean.userId!=null">
+ 				#{bean.userId},
+			 </if>
+ 			<if test="bean.username!=null">
+ 				#{bean.username},
+			 </if>
+ 			<if test="bean.articleId!=null">
+ 				#{bean.articleId},
+			 </if>
+ 			<if test="bean.videoId!=null">
+ 				#{bean.videoId},
+			 </if>
+ 			<if test="bean.parentId!=null">
+ 				#{bean.parentId},
+			 </if>
+ 			<if test="bean.replyCommentId!=null">
+ 				#{bean.replyCommentId},
+			 </if>
+ 			<if test="bean.status!=null">
+ 				#{bean.status},
+			 </if>
+ 			<if test="bean.likeCount!=null">
+ 				#{bean.likeCount},
+			 </if>
+ 			<if test="bean.ipAddress!=null">
+ 				#{bean.ipAddress},
+			 </if>
+ 			<if test="bean.createTime!=null">
+ 				#{bean.createTime},
+			 </if>
+ 			<if test="bean.updateTime!=null">
+ 				#{bean.updateTime},
+			 </if>
+		 </trim>
+	</insert>
+    <!--插入或者更新(匹配有值的字段)-->
+	<insert id="insertOrUpdate"  parameterType="com.easyboke.entity.po.Comment">
+		insert into comment
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="bean.id!=null">
+				id,
+			</if>
+			<if test="bean.content!=null">
+				content,
+			</if>
+			<if test="bean.userId!=null">
+				user_id,
+			</if>
+			<if test="bean.username!=null">
+				username,
+			</if>
+			<if test="bean.articleId!=null">
+				article_id,
+			</if>
+			<if test="bean.videoId!=null">
+				video_id,
+			</if>
+			<if test="bean.parentId!=null">
+				parent_id,
+			</if>
+			<if test="bean.replyCommentId!=null">
+				reply_comment_id,
+			</if>
+			<if test="bean.status!=null">
+				status,
+			</if>
+			<if test="bean.likeCount!=null">
+				like_count,
+			</if>
+			<if test="bean.ipAddress!=null">
+				ip_address,
+			</if>
+			<if test="bean.createTime!=null">
+				create_time,
+			</if>
+			<if test="bean.updateTime!=null">
+				update_time,
+			</if>
+		</trim>
+		<trim prefix="values(" suffix=")" suffixOverrides=",">
+ 			<if test="bean.id!=null">
+ 				#{bean.id},
+			 </if>
+ 			<if test="bean.content!=null">
+ 				#{bean.content},
+			 </if>
+ 			<if test="bean.userId!=null">
+ 				#{bean.userId},
+			 </if>
+ 			<if test="bean.username!=null">
+ 				#{bean.username},
+			 </if>
+ 			<if test="bean.articleId!=null">
+ 				#{bean.articleId},
+			 </if>
+ 			<if test="bean.videoId!=null">
+ 				#{bean.videoId},
+			 </if>
+ 			<if test="bean.parentId!=null">
+ 				#{bean.parentId},
+			 </if>
+ 			<if test="bean.replyCommentId!=null">
+ 				#{bean.replyCommentId},
+			 </if>
+ 			<if test="bean.status!=null">
+ 				#{bean.status},
+			 </if>
+ 			<if test="bean.likeCount!=null">
+ 				#{bean.likeCount},
+			 </if>
+ 			<if test="bean.ipAddress!=null">
+ 				#{bean.ipAddress},
+			 </if>
+ 			<if test="bean.createTime!=null">
+ 				#{bean.createTime},
+			 </if>
+ 			<if test="bean.updateTime!=null">
+ 				#{bean.updateTime},
+			 </if>
+		 </trim>
+		on DUPLICATE key update
+		<trim prefix="" suffix="" suffixOverrides=",">
+			<if test="bean.content!=null">
+				content =VALUES(content),
+			</if>
+			<if test="bean.userId!=null">
+				user_id =VALUES(user_id),
+			</if>
+			<if test="bean.username!=null">
+				username =VALUES(username),
+			</if>
+			<if test="bean.articleId!=null">
+				article_id =VALUES(article_id),
+			</if>
+			<if test="bean.videoId!=null">
+				video_id =VALUES(video_id),
+			</if>
+			<if test="bean.parentId!=null">
+				parent_id =VALUES(parent_id),
+			</if>
+			<if test="bean.replyCommentId!=null">
+				reply_comment_id =VALUES(reply_comment_id),
+			</if>
+			<if test="bean.status!=null">
+				status =VALUES(status),
+			</if>
+			<if test="bean.likeCount!=null">
+				like_count =VALUES(like_count),
+			</if>
+			<if test="bean.ipAddress!=null">
+				ip_address =VALUES(ip_address),
+			</if>
+			<if test="bean.createTime!=null">
+				create_time =VALUES(create_time),
+			</if>
+			<if test="bean.updateTime!=null">
+				update_time =VALUES(update_time),
+			</if>
+
+		</trim>
+	</insert>
+	<!--添加(批量插入)-->
+	<insert id="insertBatch" parameterType="com.easyboke.entity.po.Comment">
+		insert into comment(content,user_id,username,article_id,video_id,parent_id,reply_comment_id,status,like_count,ip_address,create_time,update_time)values
+		<foreach collection="list" item="item" separator=",">
+			(#{item.content},#{item.userId},#{item.username},#{item.articleId},#{item.videoId},#{item.parentId},#{item.replyCommentId},#{item.status},#{item.likeCount},#{item.ipAddress},#{item.createTime},#{item.updateTime})
+		</foreach>
+	 </insert>
+	<!--批量插入或更新-->
+	<insert id="insertOrUpdateBatch" parameterType="com.easyboke.entity.po.Comment">
+		insert into comment(content,user_id,username,article_id,video_id,parent_id,reply_comment_id,status,like_count,ip_address,create_time,update_time)values
+		<foreach collection="list" item="item" separator=",">
+			(#{item.content},#{item.userId},#{item.username},#{item.articleId},#{item.videoId},#{item.parentId},#{item.replyCommentId},#{item.status},#{item.likeCount},#{item.ipAddress},#{item.createTime},#{item.updateTime})
+		</foreach>
+			on DUPLICATE key update
+            id= VALUES(id),content= VALUES(content),user_id= VALUES(user_id),username= VALUES(username),article_id= VALUES(article_id),video_id= VALUES(video_id),parent_id= VALUES(parent_id),reply_comment_id= VALUES(reply_comment_id),status= VALUES(status),like_count= VALUES(like_count),ip_address= VALUES(ip_address),create_time= VALUES(create_time),update_time= VALUES(update_time)
+	</insert>
+	<!-- 根据"Id"查询-->
+	<select id="selectById" resultMap="base_result_map">
+		select <include refid="base_column_list"/>  from comment where id=#{id}
+	</select>
+	<!-- 根据"Id"更新-->
+	<update id="updateById" parameterType="com.easyboke.entity.po.Comment">
+		update  comment
+		<set>
+			<if test="bean.id!=null">
+			id=#{bean.id},
+			</if>
+			<if test="bean.content!=null">
+			content=#{bean.content},
+			</if>
+			<if test="bean.userId!=null">
+			user_id=#{bean.userId},
+			</if>
+			<if test="bean.username!=null">
+			username=#{bean.username},
+			</if>
+			<if test="bean.articleId!=null">
+			article_id=#{bean.articleId},
+			</if>
+			<if test="bean.videoId!=null">
+			video_id=#{bean.videoId},
+			</if>
+			<if test="bean.parentId!=null">
+			parent_id=#{bean.parentId},
+			</if>
+			<if test="bean.replyCommentId!=null">
+			reply_comment_id=#{bean.replyCommentId},
+			</if>
+			<if test="bean.status!=null">
+			status=#{bean.status},
+			</if>
+			<if test="bean.likeCount!=null">
+			like_count=#{bean.likeCount},
+			</if>
+			<if test="bean.ipAddress!=null">
+			ip_address=#{bean.ipAddress},
+			</if>
+			<if test="bean.createTime!=null">
+			create_time=#{bean.createTime},
+			</if>
+			<if test="bean.updateTime!=null">
+			update_time=#{bean.updateTime},
+			</if>
+		</set>
+		<where>
+			id=#{id}
+		</where>
+	</update>
+
+	<!-- 根据"Id"删除-->
+	<delete id="deleteById">
+		delete from comment where id=#{id}
+	</delete>
+
+    <!-- 带用户头像的结果映射 -->
+    <resultMap id="comment_with_avatar_map" type="com.easyboke.entity.po.Comment" extends="base_result_map">
+        <result column="user_avatar" property="userAvatar"/>
+        <result column="reply_username" property="replyUsername"/>
+    </resultMap>
+
+    <!-- 根据文章ID查询评论列表（含用户头像） -->
+    <select id="selectByArticleIdWithAvatar" resultMap="comment_with_avatar_map">
+        SELECT c.*, u.avatar as user_avatar,
+            rc.username as reply_username
+        FROM comment c
+        LEFT JOIN user u ON c.user_id = u.id
+        LEFT JOIN comment rc ON c.reply_comment_id = rc.id
+        WHERE c.article_id = #{articleId}
+        <if test="status != null">
+            AND c.status = #{status}
+        </if>
+        ORDER BY c.create_time DESC
+    </select>
+
+    <!-- 根据视频ID查询评论列表（含用户头像） -->
+    <select id="selectByVideoIdWithAvatar" resultMap="comment_with_avatar_map">
+        SELECT c.*, u.avatar as user_avatar,
+            rc.username as reply_username
+        FROM comment c
+        LEFT JOIN user u ON c.user_id = u.id
+        LEFT JOIN comment rc ON c.reply_comment_id = rc.id
+        WHERE c.video_id = #{videoId}
+        <if test="status != null">
+            AND c.status = #{status}
+        </if>
+        ORDER BY c.create_time DESC
+    </select>
+
+</mapper>

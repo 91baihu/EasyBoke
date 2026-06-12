@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.easyboke.mappers.VideoTagRelationMapper">
+    <resultMap id="base_result_map" type="com.easyboke.entity.po.VideoTagRelation">
+        <id column="id" property="id"/>
+        <result column="video_id" property="videoId"/>
+        <result column="tag_id" property="tagId"/>
+        <result column="create_time" property="createTime"/>
+    </resultMap>
+
+    <sql id="base_column_list">
+        id, video_id, tag_id, create_time
+    </sql>
+
+    <insert id="insert" parameterType="com.easyboke.entity.po.VideoTagRelation">
+        <selectKey keyProperty="bean.id" resultType="Integer" order="AFTER">
+            SELECT LAST_INSERT_ID();
+        </selectKey>
+        insert into video_tag_relation
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="bean.videoId != null"> video_id, </if>
+            <if test="bean.tagId != null"> tag_id, </if>
+            <if test="bean.createTime != null"> create_time, </if>
+        </trim>
+        <trim prefix="values(" suffix=")" suffixOverrides=",">
+            <if test="bean.videoId != null"> #{bean.videoId}, </if>
+            <if test="bean.tagId != null"> #{bean.tagId}, </if>
+            <if test="bean.createTime != null"> #{bean.createTime}, </if>
+        </trim>
+    </insert>
+
+    <select id="selectById" resultMap="base_result_map">
+        select <include refid="base_column_list"/> from video_tag_relation where id = #{id}
+    </select>
+
+    <update id="updateById">
+        update video_tag_relation
+        <set>
+            <if test="bean.videoId != null"> video_id = #{bean.videoId}, </if>
+            <if test="bean.tagId != null"> tag_id = #{bean.tagId}, </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        delete from video_tag_relation where id = #{id}
+    </delete>
+
+    <select id="selectTagIdsByVideoId" resultType="java.lang.Integer">
+        select tag_id from video_tag_relation where video_id = #{videoId}
+    </select>
+
+    <select id="selectVideoIdsByTagId" resultType="java.lang.Integer">
+        select video_id from video_tag_relation where tag_id = #{tagId}
+    </select>
+
+    <delete id="deleteByVideoIdAndTagId">
+        delete from video_tag_relation where video_id = #{videoId} and tag_id = #{tagId}
+    </delete>
+
+    <delete id="deleteByVideoId">
+        delete from video_tag_relation where video_id = #{videoId}
+    </delete>
+</mapper>

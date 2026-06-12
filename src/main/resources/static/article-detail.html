@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文章详情 - EasyBoke</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: #F5F6F7;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid #E5E7EB;
+            padding: 15px 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #12B7F5;
+            cursor: pointer;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 20px;
+        }
+
+        .nav-menu a {
+            text-decoration: none;
+            color: #333333;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-menu a:hover {
+            color: #12B7F5;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .username {
+            color: #12B7F5;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn {
+            padding: 8px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #12B7F5;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0099FF;
+        }
+
+        .btn-danger {
+            background: #F56C6C;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #e04a4a;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .article-detail {
+            background: #FFFFFF;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        }
+
+        .article-title {
+            font-size: 32px;
+            color: #1A1A2E;
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+
+        .article-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-top: 1px solid #E5E7EB;
+            border-bottom: 1px solid #E5E7EB;
+            margin-bottom: 30px;
+            color: #555555;
+            font-size: 14px;
+        }
+
+        .article-stats {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .like-btn {
+            background: none;
+            border: 2px solid #F56C6C;
+            color: #F56C6C;
+            padding: 8px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s;
+        }
+
+        .like-btn:hover {
+            background: #F56C6C;
+            color: white;
+        }
+
+        .like-btn.liked {
+            background: #F56C6C;
+            color: white;
+            border-color: #F56C6C;
+        }
+
+        .article-content {
+            line-height: 1.8;
+            color: #333333;
+            font-size: 16px;
+            min-height: 200px;
+        }
+
+        .article-content p {
+            margin-bottom: 15px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: #555555;
+            font-size: 18px;
+        }
+
+        .error-state {
+            text-align: center;
+            padding: 50px;
+            background: #FFFFFF;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            color: #F56C6C;
+        }
+
+        .back-btn {
+            margin-bottom: 20px;
+        }
+
+        .comment-section {
+            margin-top: 30px;
+            background: #FFFFFF;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        }
+
+        .comment-title {
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: #1A1A2E;
+        }
+
+        .comment-form {
+            margin-bottom: 30px;
+        }
+
+        .comment-form textarea {
+            width: 100%;
+            padding: 15px;
+            border: 1.5px solid #E5E7EB;
+            border-radius: 8px;
+            font-size: 14px;
+            resize: vertical;
+            min-height: 100px;
+            font-family: inherit;
+            color: #333333;
+        }
+
+        .comment-form textarea:focus {
+            outline: none;
+            border-color: #12B7F5;
+            box-shadow: 0 0 0 2px rgba(18,183,245,0.15);
+        }
+
+        .comment-form button {
+            margin-top: 10px;
+        }
+
+        .comment-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .comment-item {
+            padding: 15px; background: #F5F6F7; border-radius: 8px;
+            display: flex; gap: 12px; align-items: flex-start;
+        }
+        .comment-item.deleted { opacity: 0.6; background: #E5E7EB; }
+        .comment-item.reply-item { margin-left: 48px; border-left: 3px solid #12B7F5; }
+        .comment-item.reply-level-2 { margin-left: 96px; }
+        .comment-avatar {
+            width: 40px; height: 40px; border-radius: 50%; object-fit: cover;
+            flex-shrink: 0; background: #12B7F5; color: white;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: bold; font-size: 16px; text-decoration: none;
+        }
+        .comment-body { flex: 1; min-width: 0; }
+        .comment-header { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 13px; color: #555555; }
+        .comment-username { font-weight: 600; color: #12B7F5; }
+        .comment-time { font-size: 12px; color: #888888; }
+        .comment-content { color: #333333; line-height: 1.6; word-break: break-word; }
+        .comment-content.deleted-text { color: #888888; font-style: italic; }
+        .reply-to { font-size: 12px; color: #888888; margin-bottom: 4px; }
+        .comment-actions { margin-top: 8px; display: flex; gap: 8px; }
+        .reply-btn, .comment-delete-btn {
+            background: none; border: none; cursor: pointer; font-size: 12px;
+            padding: 4px 8px; border-radius: 4px; color: #12B7F5;
+        }
+        .reply-btn:hover { background: rgba(18,183,245,0.1); }
+        .comment-delete-btn { color: #888888; }
+        .comment-delete-btn:hover { color: #F56C6C; background: rgba(245,108,108,0.1); }
+        .no-comments { text-align: center; color: #888888; padding: 20px; }
+        .reply-form-inline { margin-top: 10px; display: flex; gap: 8px; align-items: flex-start; }
+        .reply-form-inline textarea { flex: 1; padding: 8px 12px; border: 1.5px solid #E5E7EB; border-radius: 6px; font-size: 13px; resize: vertical; min-height: 60px; font-family: inherit; color: #333333; }
+        .reply-form-inline textarea:focus { outline: none; border-color: #12B7F5; box-shadow: 0 0 0 2px rgba(18,183,245,0.15); }
+        .reply-form-inline button { padding: 6px 14px; font-size: 12px; white-space: nowrap; }
+    </style>
+</head>
+<body>
+<div class="header">
+    <div class="header-content">
+        <div class="logo" onclick="window.location.href='/index.html'">EasyBoke</div>
+        <div class="nav-menu">
+            <a href="/index.html">首页</a>
+            <a href="/category.html">分类</a>
+            <a href="/tag.html">标签</a>
+            <a href="/video-list.html">视频</a>
+        </div>
+        <div class="user-info" id="userInfo">
+            <button class="btn btn-primary" onclick="window.location.href='/login.html'">登录</button>
+            <button class="btn btn-primary" onclick="window.location.href='/register.html'">注册</button>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <button class="btn btn-primary back-btn" onclick="window.history.back()">返回</button>
+
+    <div class="article-detail" id="articleDetail">
+        <div class="loading">加载中...</div>
+    </div>
+
+    <div class="comment-section">
+        <h3 class="comment-title">评论</h3>
+
+        <div class="comment-form" id="commentForm">
+            <textarea id="commentContent" placeholder="写下你的评论..."></textarea>
+            <button class="btn btn-primary" onclick="publishComment()">发表评论</button>
+        </div>
+
+        <div class="comment-list" id="commentList">
+            <div class="loading">加载评论中...</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let articleId = null;
+    let currentUser = null;
+    let isLiked = false;
+    let currentLikeCount = 0;
+
+    window.onload = function() {
+        // 从URL获取文章ID
+        const urlParams = new URLSearchParams(window.location.search);
+        articleId = urlParams.get('id');
+
+        if (!articleId) {
+            showError('文章ID不存在');
+            return;
+        }
+
+        console.log('正在加载文章ID:', articleId);
+        loadCurrentUser();
+        loadArticleDetail();
+        loadComments();
+    };
+
+    async function loadCurrentUser() {
+        try {
+            const response = await fetch('/user/currentUser');
+            const result = await response.json();
+            if (result.status === 'success' && result.data) {
+                currentUser = result.data;
+                const initialLetter = currentUser.username ? currentUser.username.charAt(0).toUpperCase() : 'U';
+                var avatarHtml;
+                if (currentUser.avatar) {
+                    avatarHtml = '<img src="' + currentUser.avatar + '" style="width:32px;height:32px;border-radius:50%;object-fit:cover;vertical-align:middle;" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'inline-flex\';">'
+                        + '<span class="avatar-fallback" style="display:none;width:32px;height:32px;border-radius:50%;background:#12B7F5;color:white;align-items:center;justify-content:center;font-size:14px;font-weight:bold;vertical-align:middle;">' + initialLetter + '</span>';
+                } else {
+                    avatarHtml = '<span class="avatar-fallback" style="display:inline-flex;width:32px;height:32px;border-radius:50%;background:#12B7F5;color:white;align-items:center;justify-content:center;font-size:14px;font-weight:bold;vertical-align:middle;">' + initialLetter + '</span>';
+                }
+                document.getElementById('userInfo').innerHTML =
+                    '<span class="username">' + avatarHtml + ' ' + currentUser.username + '</span>' +
+                    '<button class="btn btn-primary" onclick="window.location.href=\'/profile.html\'">个人中心</button>' +
+                    '<button class="btn btn-danger" onclick="logout()">退出</button>';
+            }
+        } catch (error) {
+            console.error('加载用户信息失败:', error);
+        }
+    }
+
+    async function loadArticleDetail() {
+        try {
+            console.log('请求文章详情:', `/article/detail?id=${articleId}`);
+            const response = await fetch(`/article/detail?id=${articleId}`);
+            const result = await response.json();
+
+            console.log('文章详情响应:', result);
+
+            if (result.status === 'success' && result.data) {
+                renderArticle(result.data);
+                checkLikeStatus();
+            } else {
+                showError('文章不存在或已被删除');
+            }
+        } catch (error) {
+            console.error('加载文章失败:', error);
+            showError('加载失败，请刷新重试');
+        }
+    }
+
+    function renderArticle(article) {
+        console.log('渲染文章:', article);
+
+        currentLikeCount = article.likeCount || 0;
+
+        const publishTime = article.publishTime ? formatDate(article.publishTime) : '';
+        const content = article.content || '暂无内容';
+
+        document.getElementById('articleDetail').innerHTML =
+            '<h1 class="article-title">' + escapeHtml(article.title) + '</h1>' +
+            '<div class="article-meta">' +
+                '<span>发布时间：' + publishTime + '</span>' +
+                '<div class="article-stats">' +
+                    '<span class="stat-item">阅读 ' + (article.viewCount || 0) + '</span>' +
+                    '<span class="stat-item">评论 ' + (article.commentCount || 0) + '</span>' +
+                    '<button class="like-btn" id="likeBtn" onclick="toggleLike()">' +
+                        '点赞 ' + (article.likeCount || 0) +
+                    '</button>' +
+                '</div>' +
+            '</div>' +
+            '<div class="article-content">' +
+                formatContent(content) +
+            '</div>';
+    }
+
+    function formatContent(content) {
+        // 判断是否为HTML内容（富文本编辑器输出）
+        if (content && content.indexOf('<') >= 0 && content.indexOf('>') >= 0) {
+            return content; // 直接渲染HTML
+        }
+        // 纯文本时，将换行符转换为 <br> 标签
+        return content ? content.replace(/\n/g, '<br>') : '';
+    }
+
+    async function checkLikeStatus() {
+        if (!currentUser) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`/article/isLiked?id=${articleId}`);
+            const result = await response.json();
+
+            if (result.status === 'success' && result.data) {
+                isLiked = true;
+                const likeBtn = document.getElementById('likeBtn');
+                if (likeBtn) {
+                    likeBtn.classList.add('liked');
+                }
+            }
+        } catch (error) {
+            console.error('检查点赞状态失败:', error);
+        }
+    }
+
+    async function toggleLike() {
+        if (!currentUser) {
+            alert('请先登录');
+            window.location.href = '/login.html';
+            return;
+        }
+
+        const likeBtn = document.getElementById('likeBtn');
+        try {
+            if (isLiked) {
+                const response = await fetch(`/article/unlike?id=${articleId}`);
+                const result = await response.json();
+                if (result.status === 'success') {
+                    isLiked = false;
+                    currentLikeCount = Math.max(0, currentLikeCount - 1);
+                    if (likeBtn) {
+                        likeBtn.classList.remove('liked');
+                        likeBtn.innerHTML = '点赞 ' + currentLikeCount;
+                    }
+                } else {
+                    alert(result.info || '操作失败');
+                }
+            } else {
+                const response = await fetch(`/article/like?id=${articleId}`);
+                const result = await response.json();
+                if (result.status === 'success') {
+                    isLiked = true;
+                    currentLikeCount++;
+                    if (likeBtn) {
+                        likeBtn.classList.add('liked');
+                        likeBtn.innerHTML = '点赞 ' + currentLikeCount;
+                    }
+                } else {
+                    alert(result.info || '操作失败');
+                }
+            }
+        } catch (error) {
+            console.error('点赞操作失败:', error);
+            alert('操作失败，请重试');
+        }
+    }
+
+    async function loadComments() {
+        try {
+            const response = await fetch(`/comment/listByArticle?articleId=${articleId}`);
+            const result = await response.json();
+
+            if (result.status === 'success' && result.data) {
+                renderComments(result.data);
+            } else {
+                document.getElementById('commentList').innerHTML = '<p class="no-comments">暂无评论</p>';
+            }
+        } catch (error) {
+            console.error('加载评论失败:', error);
+            document.getElementById('commentList').innerHTML = '<p class="no-comments">加载失败</p>';
+        }
+    }
+
+    function renderComments(comments) {
+        if (!comments || comments.length === 0) {
+            document.getElementById('commentList').innerHTML = '<p class="no-comments">暂无评论</p>';
+            return;
+        }
+        const topLevel = comments.filter(c => !c.parentId || c.parentId === 0);
+        document.getElementById('commentList').innerHTML = topLevel.map(c => renderCommentItem(c, comments)).join('');
+    }
+
+    function renderCommentItem(comment, allComments) {
+        const isDeleted = comment.status === 2;
+        const createTime = comment.createTime ? formatDate(comment.createTime) : '';
+        const avatar = comment.userAvatar
+            ? '<img class="comment-avatar" src="' + comment.userAvatar + '" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\';"><span class="comment-avatar" style="display:none;">' + (comment.username||'?')[0].toUpperCase() + '</span>'
+            : '<span class="comment-avatar">' + (comment.username||'?')[0].toUpperCase() + '</span>';
+        const replyTo = comment.replyUsername ? '<div class="reply-to">回复 <b>' + escapeHtml(comment.replyUsername) + '</b></div>' : '';
+        const isOwner = currentUser && (currentUser.id === comment.userId);
+        const isAdmin = currentUser && currentUser.username === 'admin';
+        const canDelete = isOwner || isAdmin;
+
+        let cls = 'comment-item';
+        if (isDeleted) cls += ' deleted';
+        if (comment.parentId && comment.parentId > 0) {
+            // Check nesting level
+            const parent = allComments.find(c => c.id === comment.parentId);
+            if (parent && parent.parentId && parent.parentId > 0) cls += ' reply-level-2';
+            else cls += ' reply-item';
+        }
+
+        let contentHtml;
+        let actionsHtml = '';
+        if (isDeleted) {
+            contentHtml = '<div class="comment-content deleted-text">该评论已被删除</div>';
+        } else {
+            contentHtml = '<div class="comment-content">' + escapeHtml(comment.content) + '</div>';
+            actionsHtml = '<div class="comment-actions">' +
+                '<button class="reply-btn" onclick="startReply(' + comment.id + ', \'' + escapeHtml(comment.username||'匿名用户') + '\')">回复</button>';
+            if (canDelete) {
+                actionsHtml += '<button class="comment-delete-btn" onclick="deleteComment(' + comment.id + ')">删除</button>';
+            }
+            actionsHtml += '</div>';
+        }
+
+        // Find child replies
+        const replies = allComments.filter(c => c.parentId === comment.id);
+        let repliesHtml = '';
+        if (replies.length > 0) {
+            repliesHtml = replies.map(r => renderCommentItem(r, allComments)).join('');
+        }
+
+        return '<div class="' + cls + '">' +
+            avatar +
+            '<div class="comment-body">' +
+                '<div class="comment-header">' +
+                    '<span class="comment-username">' + escapeHtml(comment.username||'匿名用户') + '</span>' +
+                    '<span class="comment-time">' + createTime + '</span>' +
+                '</div>' +
+                replyTo +
+                contentHtml +
+                actionsHtml +
+                '<div class="reply-box" id="replyBox-' + comment.id + '"></div>' +
+                repliesHtml +
+            '</div>' +
+        '</div>';
+    }
+
+    var replyTargetId = null;
+    function startReply(commentId, username) {
+        replyTargetId = commentId;
+        var box = document.getElementById('replyBox-' + commentId);
+        box.innerHTML = '<div class="reply-form-inline">' +
+            '<textarea id="replyContent-' + commentId + '" placeholder="回复 @' + username + '..."></textarea>' +
+            '<button class="btn btn-primary" onclick="submitReply(' + commentId + ')">回复</button>' +
+            '<button class="btn" style="background:#E5E7EB;color:#555555;padding:6px 14px;font-size:12px;" onclick="cancelReply(' + commentId + ')">取消</button>' +
+            '</div>';
+    }
+    function cancelReply(commentId) {
+        replyTargetId = null;
+        document.getElementById('replyBox-' + commentId).innerHTML = '';
+    }
+
+    async function submitReply(parentCommentId) {
+        var contentEl = document.getElementById('replyContent-' + parentCommentId);
+        var content = (contentEl.value || '').trim();
+        if (!content) { alert('回复内容不能为空'); return; }
+        if (!currentUser) { alert('请先登录'); window.location.href = '/login.html'; return; }
+
+        try {
+            var res = await fetch('/comment/reply', {
+                method: 'POST', headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    articleId: parseInt(articleId),
+                    content: content,
+                    parentId: parentCommentId,
+                    replyCommentId: parentCommentId
+                })
+            });
+            var result = await res.json();
+            if (result.status === 'success') {
+                replyTargetId = null;
+                loadComments();
+            } else {
+                alert(result.info || '回复失败');
+            }
+        } catch (e) {
+            alert('回复失败，请重试');
+        }
+    }
+
+    async function deleteComment(commentId) {
+        if (!confirm('确定要删除这条评论吗？')) return;
+        try {
+            var res = await fetch('/comment/updateCommentById', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                body: 'id=' + commentId + '&status=2'
+            });
+            var result = await res.json();
+            if (result.status === 'success') {
+                loadComments();
+            } else {
+                alert(result.info || '删除失败');
+            }
+        } catch (e) {
+            alert('删除失败，请重试');
+        }
+    }
+
+    async function publishComment() {
+        if (!currentUser) {
+            alert('请先登录');
+            window.location.href = '/login.html';
+            return;
+        }
+
+        const content = document.getElementById('commentContent').value.trim();
+        if (!content) {
+            alert('评论内容不能为空');
+            return;
+        }
+
+        try {
+            const response = await fetch('/comment/publish', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    articleId: parseInt(articleId),
+                    content: content
+                })
+            });
+
+            const result = await response.json();
+
+            if (result.status === 'success') {
+                alert('评论成功');
+                document.getElementById('commentContent').value = '';
+                loadComments();
+                // 更新评论数显示（不重新请求详情API，避免增加播放量）
+                const statsEl = document.querySelector('.article-stats');
+                if (statsEl) {
+                    const spans = statsEl.querySelectorAll('.stat-item');
+                    if (spans.length >= 2) {
+                        const match = spans[1].textContent.match(/\d+/);
+                        if (match) {
+                            spans[1].innerHTML = '评论 ' + (parseInt(match[0]) + 1);
+                        }
+                    }
+                }
+            } else {
+                alert(result.info || '评论失败');
+            }
+        } catch (error) {
+            console.error('评论失败:', error);
+            alert('评论失败，请重试');
+        }
+    }
+
+    function showError(message) {
+        document.getElementById('articleDetail').innerHTML =
+            '<div class="error-state">' +
+                '<h2>' + message + '</h2>' +
+                '<button class="btn btn-primary" onclick="window.history.back()" style="margin-top: 20px;">返回</button>' +
+            '</div>';
+    }
+
+    async function logout() {
+        if (confirm('确定要退出登录吗？')) {
+            try {
+                await fetch('/user/logout', { method: 'POST' });
+                window.location.reload();
+            } catch (error) {
+                console.error('退出失败:', error);
+            }
+        }
+    }
+
+    function formatDate(dateStr) {
+        if (!dateStr) return '-';
+        const date = new Date(dateStr);
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        const seconds = String(date.getSeconds()).padStart(2, '0');
+        return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+    }
+
+    function escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+</script>
+</body>
+</html>

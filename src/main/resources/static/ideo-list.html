@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>视频播放 - EasyBoke</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: #F5F6F7;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+            padding: 15px 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #12B7F5;
+            cursor: pointer;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 20px;
+        }
+
+        .nav-menu a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-menu a:hover {
+            color: #12B7F5;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #12B7F5;
+            text-decoration: none;
+            margin-bottom: 20px;
+            font-size: 16px;
+            transition: all 0.3s;
+            padding: 8px 16px;
+            border-radius: 12px;
+        }
+
+        .back-btn:hover {
+            background: rgba(18, 183, 245, 0.08);
+            color: #0099FF;
+        }
+
+        .player-wrapper {
+            background: #FFFFFF;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .video-container {
+            width: 100%;
+            background: #000;
+            position: relative;
+        }
+
+        .video-container iframe,
+        .video-container video {
+            width: 100%;
+            height: 600px;
+            border: none;
+        }
+
+        .video-details {
+            padding: 30px;
+        }
+
+        .video-title {
+            font-size: 28px;
+            color: #1A1A2E;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .video-meta {
+            display: flex;
+            gap: 30px;
+            color: #888888;
+            font-size: 14px;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .video-meta span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .video-description {
+            color: #555555;
+            line-height: 1.8;
+            font-size: 15px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+            padding-top: 25px;
+            border-top: 1px solid #eee;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-like {
+            background: #ecf5ff;
+            color: #12B7F5;
+        }
+
+        .btn-like:hover {
+            background: #12B7F5;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(18, 183, 245, 0.3);
+        }
+
+        .btn-like.liked {
+            background: #f56c6c;
+            color: white;
+        }
+
+        .btn-share {
+            background: #f4f4f5;
+            color: #555555;
+        }
+
+        .btn-share:hover {
+            background: #909399;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(144, 147, 153, 0.3);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 100px;
+            color: #888888;
+            font-size: 18px;
+        }
+
+        .error-state {
+            text-align: center;
+            padding: 100px;
+            background: #FFFFFF;
+            border-radius: 12px;
+            color: #888888;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        @media (max-width: 768px) {
+            .video-container iframe,
+            .video-container video {
+                height: 300px;
+            }
+
+            .video-title {
+                font-size: 20px;
+            }
+
+            .video-meta {
+                flex-wrap: wrap;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="header">
+    <div class="header-content">
+        <div class="logo" onclick="window.location.href='/index.html'">EasyBoke</div>
+        <div class="nav-menu">
+            <a href="/index.html">首页</a>
+            <a href="/video-list.html">视频</a>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <a href="/video-list.html" class="back-btn">&#8592; 返回视频列表</a>
+
+    <div class="player-wrapper">
+        <div class="video-container" id="videoContainer">
+            <div class="loading">加载中...</div>
+        </div>
+
+        <div class="video-details">
+            <h1 class="video-title" id="videoTitle"></h1>
+            <div class="video-meta">
+                <span>&#x1F441; <span id="viewCount">0</span> 次播放</span>
+                <span>&#x2764; <span id="likeCount">0</span> 点赞</span>
+                <span>&#x23F1; <span id="duration">00:00</span></span>
+                <span>&#x1F4C5; <span id="publishTime"></span></span>
+            </div>
+            <div class="video-description" id="videoDescription"></div>
+
+            <div class="action-buttons">
+                <button class="btn btn-like" id="likeBtn" onclick="toggleLike()">
+                    <span>&#x2764;</span>
+                    <span id="likeText">点赞</span>
+                </button>
+                <button class="btn btn-share" onclick="shareVideo()">
+                    <span>&#x1F517;</span>
+                    <span>分享</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let videoId = null;
+    let videoData = null;
+    let isLiked = false;
+
+    window.onload = function() {
+        const params = new URLSearchParams(window.location.search);
+        videoId = params.get('id');
+
+        if (!videoId) {
+            showError('视频ID不存在');
+            return;
+        }
+
+        loadVideo();
+    };
+
+    async function loadVideo() {
+        try {
+            const response = await fetch(`/video/getVideoById?id=${videoId}`);
+            const result = await response.json();
+
+            if (result.status === 'success' && result.data) {
+                videoData = result.data;
+                renderVideo(videoData);
+
+                fetch(`/video/view/${videoId}`, { method: 'POST' });
+            } else {
+                showError('视频不存在或已被删除');
+            }
+        } catch (error) {
+            console.error('加载视频失败:', error);
+            showError('加载失败，请刷新重试');
+        }
+    }
+
+    function renderVideo(video) {
+        document.getElementById('videoTitle').textContent = video.title;
+        document.getElementById('videoDescription').textContent = video.description || '暂无描述';
+        document.getElementById('viewCount').textContent = video.viewCount || 0;
+        document.getElementById('likeCount').textContent = video.likeCount || 0;
+        document.getElementById('duration').textContent = formatDuration(video.duration);
+
+        if (video.publishTime) {
+            document.getElementById('publishTime').textContent = formatDate(video.publishTime);
+        }
+
+        renderPlayer(video.videoUrl);
+    }
+
+    function renderPlayer(videoUrl) {
+        const container = document.getElementById('videoContainer');
+
+        if (!videoUrl) {
+            container.innerHTML = '<div class="error-state">视频地址不存在</div>';
+            return;
+        }
+
+        if (isBilibiliUrl(videoUrl)) {
+            const bvid = extractBilibiliBVID(videoUrl);
+            if (bvid) {
+                container.innerHTML = `<iframe src="//player.bilibili.com/player.html?bvid=${bvid}&high_quality=1&danmaku=0" allowfullscreen="true"></iframe>`;
+            } else {
+                container.innerHTML = '<div class="error-state">无法解析B站视频地址</div>';
+            }
+        } else if (isYoukuUrl(videoUrl)) {
+            const vid = extractYoukuVID(videoUrl);
+            if (vid) {
+                container.innerHTML = `<iframe src="https://player.youku.com/embed/${vid}" allowfullscreen="true"></iframe>`;
+            } else {
+                container.innerHTML = '<div class="error-state">无法解析优酷视频地址</div>';
+            }
+        } else if (videoUrl.match(/\.(mp4|webm|ogg)(\?.*)?$/i)) {
+            container.innerHTML = `<video controls autoplay><source src="${videoUrl}" type="video/mp4">您的浏览器不支持视频播放</video>`;
+        } else {
+            container.innerHTML = `<iframe src="${videoUrl}" allowfullscreen="true"></iframe>`;
+        }
+    }
+
+    function isBilibiliUrl(url) {
+        return url.includes('bilibili.com');
+    }
+
+    function extractBilibiliBVID(url) {
+        const match = url.match(/BV\w+/);
+        return match ? match[0] : null;
+    }
+
+    function isYoukuUrl(url) {
+        return url.includes('youku.com');
+    }
+
+    function extractYoukuVID(url) {
+        const match = url.match(/\/v_show\/id_([^.]+)\.html/);
+        return match ? match[1] : null;
+    }
+
+    function formatDuration(seconds) {
+        if (!seconds) return '00:00';
+        const minutes = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
+
+    async function toggleLike() {
+        const likeBtn = document.getElementById('likeBtn');
+        const likeText = document.getElementById('likeText');
+
+        if (!currentUser) {
+            alert('请先登录');
+            window.location.href = '/login.html';
+            return;
+        }
+
+        try {
+            const url = isLiked ? '/video/unlike' : '/video/like';
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ videoId: videoId })
+            });
+
+            const result = await response.json();
+
+            if (result.status === 'success') {
+                isLiked = !isLiked;
+                likeBtn.classList.toggle('liked', isLiked);
+                likeText.textContent = isLiked ? '已点赞' : '点赞';
+
+                const currentLikes = parseInt(document.getElementById('likeCount').textContent);
+                document.getElementById('likeCount').textContent = isLiked ? currentLikes + 1 : currentLikes - 1;
+            } else {
+                alert(result.info || '操作失败');
+            }
+        } catch (error) {
+            console.error('点赞操作失败:', error);
+            alert('操作失败，请重试');
+        }
+    }
+
+    function shareVideo() {
+        const url = window.location.href;
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(url).then(() => {
+                alert('链接已复制到剪贴板');
+            });
+        } else {
+            prompt('复制以下链接分享：', url);
+        }
+    }
+
+    function showError(message) {
+        document.getElementById('videoContainer').innerHTML =
+            `<div class="error-state">${message}</div>`;
+    }
+
+    function formatDate(dateStr) {
+        if (!dateStr) return '-';
+        const date = new Date(dateStr);
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        const seconds = String(date.getSeconds()).padStart(2, '0');
+        return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+    }
+
+    let currentUser = null;
+
+    async function loadCurrentUser() {
+        try {
+            const response = await fetch('/user/currentUser');
+            const result = await response.json();
+            if (result.status === 'success' && result.data) {
+                currentUser = result.data;
+            }
+        } catch (error) {
+            console.error('加载用户信息失败:', error);
+        }
+    }
+
+    loadCurrentUser();
+</script>
+</body>
+</html>

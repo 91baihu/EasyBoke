@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>博客首页 - EasyBoke</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: #F5F6F7;
+            min-height: 100vh;
+        }
+
+        /* ========== Header -- glass effect ========== */
+        .header {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid #E5E7EB;
+            padding: 15px 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #12B7F5;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .nav-menu a {
+            text-decoration: none;
+            color: #1A1A2E;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-menu a:hover {
+            color: #12B7F5;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .username {
+            color: #12B7F5;
+            font-weight: bold;
+        }
+
+        .btn {
+            padding: 8px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #12B7F5;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0099FF;
+        }
+
+        .btn-danger {
+            background: #FF3B30;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #E03030;
+        }
+
+        /* ========== Layout ========== */
+        .container-flex {
+            display: flex;
+            gap: 20px;
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 20px;
+            align-items: flex-start;
+        }
+
+        .main-area {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .side-panel {
+            width: 320px;
+            flex-shrink: 0;
+        }
+
+        @media (max-width: 900px) {
+            .container-flex {
+                flex-direction: column;
+            }
+            .side-panel {
+                width: 100%;
+            }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        /* ========== Page & Section Titles ========== */
+        .page-title {
+            color: #1A1A2E;
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            color: #1A1A2E;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        /* ========== Search Bar ========== */
+        .search-bar {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+            display: flex;
+            gap: 10px;
+        }
+
+        .search-bar input {
+            flex: 1;
+            padding: 10px 15px;
+            border: 1.5px solid #E5E7EB;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .search-bar input:focus {
+            outline: none;
+            border-color: #12B7F5;
+        }
+
+        /* ========== Filter Bar ========== */
+        .filter-bar {
+            background: white;
+            padding: 15px 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .filter-bar select {
+            padding: 8px 15px;
+            border: 1.5px solid #E5E7EB;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            color: #1A1A2E;
+        }
+
+        .filter-bar select:focus {
+            outline: none;
+            border-color: #12B7F5;
+        }
+
+        .filter-bar label {
+            color: #555555;
+        }
+
+        /* ========== Article List ========== */
+        .article-list {
+            display: grid;
+            gap: 20px;
+        }
+
+        .article-card {
+            background: #FFFFFF;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+        }
+
+        .article-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+        }
+
+        .article-title {
+            font-size: 22px;
+            color: #1A1A2E;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .article-summary {
+            color: #555555;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .article-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #888888;
+            font-size: 14px;
+        }
+
+        .article-stats {
+            display: flex;
+            gap: 20px;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .like-btn {
+            background: none;
+            border: none;
+            color: #888888;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: color 0.3s;
+        }
+
+        .like-btn:hover {
+            color: #FF3B30;
+        }
+
+        .like-btn.liked {
+            color: #FF3B30;
+        }
+
+        /* ========== Pagination ========== */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 30px;
+            padding: 20px;
+        }
+
+        .pagination button {
+            padding: 8px 15px;
+            border: 1.5px solid #E5E7EB;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            color: #555555;
+            transition: all 0.3s;
+        }
+
+        .pagination button:hover:not(:disabled) {
+            background: #12B7F5;
+            color: white;
+            border-color: #12B7F5;
+        }
+
+        .pagination button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .pagination span {
+            display: flex;
+            align-items: center;
+            color: #888888;
+            font-size: 14px;
+        }
+
+        /* ========== Loading & Empty States ========== */
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: #888888;
+            font-size: 18px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 50px;
+            color: #888888;
+            background: white;
+            border-radius: 12px;
+        }
+
+        /* ========== Side Panel Cards ========== */
+        .side-card {
+            background: #FFFFFF;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+            margin-bottom: 20px;
+        }
+
+        .side-card .section-title {
+            font-size: 16px;
+            margin-bottom: 16px;
+        }
+
+        /* ========== TOP Period Buttons ========== */
+        .top-period-btns {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .top-period-btn {
+            flex: 1;
+            padding: 6px 0;
+            border: 1.5px solid #E5E7EB;
+            border-radius: 8px;
+            background: #F5F6F7;
+            color: #888888;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .top-period-btn:hover {
+            border-color: #12B7F5;
+            color: #12B7F5;
+        }
+
+        .top-period-btn.active {
+            background: #12B7F5;
+            color: white;
+            border-color: #12B7F5;
+        }
+
+        /* ========== TOP Article List ========== */
+        .top-list-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid #F0F0F0;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .top-list-item:last-child {
+            border-bottom: none;
+        }
+
+        .top-list-item:hover {
+            background: #FAFAFA;
+        }
+
+        .top-rank {
+            width: 24px;
+            height: 24px;
+            line-height: 24px;
+            text-align: center;
+            border-radius: 50%;
+            color: white;
+            font-size: 12px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .top-rank.gold {
+            background: #F56C6C;
+        }
+
+        .top-rank.silver {
+            background: #E6A23C;
+        }
+
+        .top-rank.bronze {
+            background: #67C23A;
+        }
+
+        .top-rank.normal {
+            background: #C0C4CC;
+        }
+
+        .top-title {
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            font-size: 13px;
+            color: #1A1A2E;
+        }
+
+        .top-views {
+            font-size: 11px;
+            color: #888888;
+            flex-shrink: 0;
+        }
+    </style>
+</head>
+<body>
+
+<!-- ========== Header ========== -->
+<div class="header">
+    <div class="header-content">
+        <div class="logo">&#x1F4DD; EasyBoke</div>
+        <div class="nav-menu">
+            <a href="/index.html">首页</a>
+            <a href="/category.html">分类</a>
+            <a href="/tag.html">标签</a>
+            <a href="/video-list.html">视频</a>
+        </div>
+        <div class="user-info" id="userInfo">
+            <button class="btn btn-primary" onclick="window.location.href='/login.html'">登录</button>
+            <button class="btn btn-primary" onclick="window.location.href='/register.html'">注册</button>
+        </div>
+    </div>
+</div>
+
+<!-- ========== Main Layout ========== -->
+<div class="container-flex">
+    <div class="main-area">
+        <div class="search-bar">
+            <input type="text" id="searchInput" placeholder="搜索文章...">
+            <button class="btn btn-primary" onclick="searchArticles()">搜索</button>
+        </div>
+
+        <div class="filter-bar">
+            <label>分类：</label>
+            <select id="categoryFilter" onchange="loadArticles()">
+                <option value="">全部分类</option>
+            </select>
+
+            <label>排序：</label>
+            <select id="sortBy" onchange="loadArticles()">
+                <option value="latest">最新发布</option>
+                <option value="hot">最热浏览</option>
+                <option value="like">最多点赞</option>
+            </select>
+        </div>
+
+        <div class="article-list" id="articleList">
+            <div class="loading">加载中...</div>
+        </div>
+
+        <div class="pagination" id="pagination"></div>
+    </div>
+
+    <!-- ========== Side Panel ========== -->
+    <div class="side-panel">
+        <!-- 热度排行 -->
+        <div class="side-card">
+            <div class="section-title">&#x1F525; 热度排行 TOP10</div>
+            <div class="top-period-btns">
+                <button class="top-period-btn active" onclick="loadTopArticles('all', this)">全部</button>
+                <button class="top-period-btn" onclick="loadTopArticles('week', this)">本周</button>
+                <button class="top-period-btn" onclick="loadTopArticles('month', this)">本月</button>
+            </div>
+            <div id="topArticleList">
+                <div style="text-align:center;padding:20px;color:#888888;">加载中...</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ========== Scripts ========== -->
+<script>
+    let currentPage = 1;
+    const pageSize = 10;
+    let currentUser = null;
+
+    window.onload = function() {
+        loadCurrentUser();
+        loadCategories();
+        loadArticles();
+        loadTopArticles('all');
+    };
+
+    async function loadCurrentUser() {
+        try {
+            const response = await fetch('/user/currentUser');
+            const result = await response.json();
+            if (result.status === 'success' && result.data) {
+                currentUser = result.data;
+                const avatarHtml = currentUser.avatar
+                    ? '<img src="' + currentUser.avatar + '" style="width:32px;height:32px;border-radius:50%;object-fit:cover;vertical-align:middle;" onerror="this.style.display=\'none\'">'
+                    : '';
+                document.getElementById('userInfo').innerHTML =
+                    '<span class="username">' + avatarHtml + ' ' + currentUser.username + '</span>' +
+                    '<button class="btn btn-primary" onclick="window.location.href=\'/profile.html\'">个人中心</button>' +
+                    '<button class="btn btn-danger" onclick="logout()">退出</button>';
+            }
+        } catch (error) {
+            console.error('加载用户信息失败:', error);
+        }
+    }
+
+    async function loadCategories() {
+        try {
+            const response = await fetch('/category/loadDataList?pageNo=1&pageSize=100');
+            const result = await response.json();
+            if (result.status === 'success' && result.data && result.data.list) {
+                const select = document.getElementById('categoryFilter');
+                result.data.list.forEach(function(category) {
+                    const option = document.createElement('option');
+                    option.value = category.id;
+                    option.textContent = category.categoryName;
+                    select.appendChild(option);
+                });
+            }
+        } catch (error) {
+            console.error('加载分类失败:', error);
+        }
+    }
+
+    async function loadArticles() {
+        const articleList = document.getElementById('articleList');
+        articleList.innerHTML = '<div class="loading">加载中...</div>';
+
+        try {
+            const categoryId = document.getElementById('categoryFilter').value;
+            const sortBy = document.getElementById('sortBy').value;
+
+            let url = '/article/loadDataList?pageNo=' + currentPage + '&pageSize=' + pageSize + '&status=1';
+
+            if (categoryId) {
+                url += '&categoryId=' + categoryId;
+            }
+
+            if (sortBy === 'hot') {
+                url += '&orderBy=view_count desc';
+            } else if (sortBy === 'like') {
+                url += '&orderBy=like_count desc';
+            } else {
+                url += '&orderBy=publish_time desc';
+            }
+
+            const response = await fetch(url);
+            const result = await response.json();
+
+            if (result.status === 'success' && result.data && result.data.list) {
+                renderArticles(result.data.list);
+                renderPagination(result.data.totalCount);
+            } else {
+                articleList.innerHTML = '<div class="empty-state">暂无文章</div>';
+            }
+        } catch (error) {
+            console.error('加载文章失败:', error);
+            articleList.innerHTML = '<div class="empty-state">加载失败，请刷新重试</div>';
+        }
+    }
+
+    function renderArticles(articles) {
+        const articleList = document.getElementById('articleList');
+
+        if (articles.length === 0) {
+            articleList.innerHTML = '<div class="empty-state">暂无文章</div>';
+            return;
+        }
+
+        articleList.innerHTML = articles.map(function(article) {
+            const publishTime = article.publishTime ? formatDate(article.publishTime) : '';
+            return '<div class="article-card" onclick="viewArticle(' + article.id + ')">' +
+                '<h2 class="article-title">' + escapeHtml(article.title) + '</h2>' +
+                '<p class="article-summary">' + escapeHtml(article.summary || '暂无摘要') + '</p>' +
+                '<div class="article-meta">' +
+                '<span>&#x1F4C5; ' + publishTime + '</span>' +
+                '<div class="article-stats">' +
+                '<span class="stat-item">&#x1F441;&#xFE0F; ' + (article.viewCount || 0) + '</span>' +
+                '<span class="stat-item">&#x1F4AC; ' + (article.commentCount || 0) + '</span>' +
+                '<button class="like-btn" onclick="event.stopPropagation(); toggleLike(' + article.id + ', this)">' +
+                '&#x2764;&#xFE0F; ' + (article.likeCount || 0) +
+                '</button>' +
+                '</div>' +
+                '</div>' +
+                '</div>';
+        }).join('');
+    }
+
+    function renderPagination(totalCount) {
+        const totalPages = Math.ceil(totalCount / pageSize);
+        const pagination = document.getElementById('pagination');
+
+        if (totalPages <= 1) {
+            pagination.innerHTML = '';
+            return;
+        }
+
+        var html = '<button onclick="changePage(1)"' + (currentPage === 1 ? ' disabled' : '') + '>首页</button>' +
+            '<button onclick="changePage(' + (currentPage - 1) + ')"' + (currentPage === 1 ? ' disabled' : '') + '>上一页</button>' +
+            '<span>第 ' + currentPage + ' / ' + totalPages + ' 页，共 ' + totalCount + ' 条</span>' +
+            '<button onclick="changePage(' + (currentPage + 1) + ')"' + (currentPage === totalPages ? ' disabled' : '') + '>下一页</button>' +
+            '<button onclick="changePage(' + totalPages + ')"' + (currentPage === totalPages ? ' disabled' : '') + '>末页</button>';
+
+        pagination.innerHTML = html;
+    }
+
+    function changePage(page) {
+        currentPage = page;
+        loadArticles();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    async function searchArticles() {
+        const keyword = document.getElementById('searchInput').value.trim();
+        if (!keyword) {
+            loadArticles();
+            return;
+        }
+
+        const articleList = document.getElementById('articleList');
+        articleList.innerHTML = '<div class="loading">搜索中...</div>';
+
+        try {
+            const response = await fetch('/article/search?keyword=' + encodeURIComponent(keyword));
+            const result = await response.json();
+
+            if (result.status === 'success' && result.data) {
+                renderArticles(result.data);
+                document.getElementById('pagination').innerHTML = '';
+            } else {
+                articleList.innerHTML = '<div class="empty-state">未找到相关文章</div>';
+            }
+        } catch (error) {
+            console.error('搜索失败:', error);
+            articleList.innerHTML = '<div class="empty-state">搜索失败，请重试</div>';
+        }
+    }
+
+    async function toggleLike(articleId, btn) {
+        if (!currentUser) {
+            alert('请先登录');
+            window.location.href = '/login.html';
+            return;
+        }
+
+        try {
+            const checkResponse = await fetch('/article/isLiked?id=' + articleId);
+            const checkResult = await checkResponse.json();
+
+            if (checkResult.data) {
+                const response = await fetch('/article/unlike?id=' + articleId);
+                const result = await response.json();
+                if (result.status === 'success') {
+                    btn.classList.remove('liked');
+                    loadArticles();
+                } else {
+                    alert(result.info || '操作失败');
+                }
+            } else {
+                const response = await fetch('/article/like?id=' + articleId);
+                const result = await response.json();
+                if (result.status === 'success') {
+                    btn.classList.add('liked');
+                    loadArticles();
+                } else {
+                    alert(result.info || '操作失败');
+                }
+            }
+        } catch (error) {
+            console.error('点赞操作失败:', error);
+            alert('操作失败，请重试');
+        }
+    }
+
+    function viewArticle(id) {
+        window.location.href = '/article-detail.html?id=' + id;
+    }
+
+    async function logout() {
+        if (confirm('确定要退出登录吗？')) {
+            try {
+                await fetch('/user/logout', { method: 'POST' });
+                window.location.reload();
+            } catch (error) {
+                console.error('退出失败:', error);
+            }
+        }
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    function formatDate(dateStr) {
+        if (!dateStr) return '-';
+        const date = new Date(dateStr);
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        const seconds = String(date.getSeconds()).padStart(2, '0');
+        return year + '-' + month + '-' + day + ' ' + hours + ':' + minutes + ':' + seconds;
+    }
+
+    document.getElementById('searchInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            searchArticles();
+        }
+    });
+
+    // ========== TOP10 热度排行 ==========
+    async function loadTopArticles(period, clickedBtn) {
+        // 更新按钮样式
+        var buttons = document.querySelectorAll('.top-period-btn');
+        buttons.forEach(function(btn) {
+            btn.classList.remove('active');
+        });
+        if (clickedBtn) {
+            clickedBtn.classList.add('active');
+        } else {
+            // 页面初始加载时，激活"全部"按钮
+            var allBtn = document.querySelector('.top-period-btn');
+            if (allBtn) allBtn.classList.add('active');
+        }
+
+        try {
+            var res = await fetch('/article/top?period=' + period + '&limit=10');
+            var result = await res.json();
+            if (result.status === 'success' && result.data) {
+                var list = result.data;
+                var html = '';
+                if (list.length === 0) {
+                    html = '<div style="text-align:center;padding:20px;color:#888888;">暂无数据</div>';
+                } else {
+                    var rankClasses = ['gold', 'silver', 'bronze'];
+                    list.forEach(function(article, i) {
+                        var cls = i < 3 ? rankClasses[i] : 'normal';
+                        html += '<div class="top-list-item" onclick="window.location.href=\'/article-detail.html?id=' + article.id + '\'">' +
+                            '<span class="top-rank ' + cls + '">' + (i + 1) + '</span>' +
+                            '<span class="top-title">' + escapeHtml(article.title || '无标题') + '</span>' +
+                            '<span class="top-views">&#x1F525;' + (article.viewCount || 0) + '</span>' +
+                            '</div>';
+                    });
+                }
+                document.getElementById('topArticleList').innerHTML = html;
+            }
+        } catch (e) {
+            console.error('加载TOP排行失败:', e);
+        }
+    }
+</script>
+</body>
+</html>

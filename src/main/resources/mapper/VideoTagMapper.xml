@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.easyboke.mappers.VideoTagMapper">
+    <resultMap id="base_result_map" type="com.easyboke.entity.po.VideoTag">
+        <id column="id" property="id"/>
+        <result column="tag_name" property="tagName"/>
+        <result column="use_count" property="useCount"/>
+        <result column="create_time" property="createTime"/>
+    </resultMap>
+
+    <sql id="base_column_list">
+        id, tag_name, use_count, create_time
+    </sql>
+
+    <sql id="base_query_condition">
+        <if test="query.id != null"> and id = #{query.id} </if>
+        <if test="query.tagName != null and query.tagName != ''"> and tag_name = #{query.tagName} </if>
+        <if test="query.useCount != null"> and use_count = #{query.useCount} </if>
+    </sql>
+
+    <sql id="base_query_condition_extend">
+        <if test="query.tagNameFuzzy != null and query.tagNameFuzzy != ''">
+            and tag_name like concat('%', #{query.tagNameFuzzy}, '%')
+        </if>
+    </sql>
+
+    <sql id="query_condition">
+        <where>
+            <include refid="base_query_condition"/>
+            <include refid="base_query_condition_extend"/>
+        </where>
+    </sql>
+
+    <select id="selectList" resultMap="base_result_map">
+        SELECT <include refid="base_column_list"/> FROM video_tag <include refid="query_condition"/>
+        <choose>
+            <when test="query.orderBy != null"> order by ${query.orderBy}</when>
+            <otherwise> order by use_count desc</otherwise>
+        </choose>
+        <if test="query.simplePage != null"> limit #{query.simplePage.start}, #{query.simplePage.end}</if>
+    </select>
+
+    <select id="selectCount" resultType="java.lang.Integer">
+        SELECT count(1) FROM video_tag <include refid="query_condition"/>
+    </select>
+
+    <insert id="insert" parameterType="com.easyboke.entity.po.VideoTag">
+        <selectKey keyProperty="bean.id" resultType="Integer" order="AFTER">
+            SELECT LAST_INSERT_ID();
+        </selectKey>
+        insert into video_tag
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="bean.tagName != null"> tag_name, </if>
+            <if test="bean.useCount != null"> use_count, </if>
+            <if test="bean.createTime != null"> create_time, </if>
+        </trim>
+        <trim prefix="values(" suffix=")" suffixOverrides=",">
+            <if test="bean.tagName != null"> #{bean.tagName}, </if>
+            <if test="bean.useCount != null"> #{bean.useCount}, </if>
+            <if test="bean.createTime != null"> #{bean.createTime}, </if>
+        </trim>
+    </insert>
+
+    <insert id="insertOrUpdate" parameterType="com.easyboke.entity.po.VideoTag">
+        insert into video_tag
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="bean.tagName != null"> tag_name, </if>
+            <if test="bean.useCount != null"> use_count, </if>
+            <if test="bean.createTime != null"> create_time, </if>
+        </trim>
+        <trim prefix="values(" suffix=")" suffixOverrides=",">
+            <if test="bean.tagName != null"> #{bean.tagName}, </if>
+            <if test="bean.useCount != null"> #{bean.useCount}, </if>
+            <if test="bean.createTime != null"> #{bean.createTime}, </if>
+        </trim>
+        on DUPLICATE key update
+        <trim suffixOverrides=",">
+            <if test="bean.useCount != null"> use_count = VALUES(use_count), </if>
+        </trim>
+    </insert>
+
+    <select id="selectById" resultMap="base_result_map">
+        select <include refid="base_column_list"/> from video_tag where id = #{id}
+    </select>
+
+    <update id="updateById" parameterType="com.easyboke.entity.po.VideoTag">
+        update video_tag
+        <set>
+            <if test="bean.tagName != null"> tag_name = #{bean.tagName}, </if>
+            <if test="bean.useCount != null"> use_count = #{bean.useCount}, </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        delete from video_tag where id = #{id}
+    </delete>
+
+    <select id="selectByTagName" resultMap="base_result_map">
+        select <include refid="base_column_list"/> from video_tag where tag_name = #{tagName}
+    </select>
+
+    <update id="incrementUseCount">
+        update video_tag set use_count = use_count + 1 where id = #{id}
+    </update>
+</mapper>

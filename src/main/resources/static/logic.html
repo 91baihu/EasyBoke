@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户登录 - EasyBoke</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB',
+                'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #12B7F5 0%, #0099FF 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .login-container {
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .login-box {
+            background: #FFFFFF;
+            border-radius: 20px;
+            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.15);
+            padding: 50px 40px;
+            width: 420px;
+            max-width: 90%;
+            z-index: 10;
+            animation: slideUp 0.5s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .login-header h1 {
+            color: #12B7F5;
+            font-size: 32px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .login-header p {
+            color: #888888;
+            font-size: 14px;
+        }
+
+        .login-form {
+            margin-top: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            color: #1A1A2E;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .form-group input[type="text"],
+        .form-group input[type="password"] {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            outline: none;
+            background: #FAFAFA;
+        }
+
+        .form-group input[type="text"]:focus,
+        .form-group input[type="password"]:focus {
+            border-color: #12B7F5;
+            background: #FFFFFF;
+            box-shadow: 0 0 0 3px rgba(18, 183, 245, 0.12);
+        }
+
+        .form-group input.error {
+            border-color: #f56c6c;
+        }
+
+        .form-group input.error:focus {
+            box-shadow: 0 0 0 3px rgba(245, 108, 108, 0.12);
+        }
+
+        .error-message {
+            display: block;
+            color: #f56c6c;
+            font-size: 12px;
+            margin-top: 5px;
+            min-height: 18px;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #12B7F5 0%, #0099FF 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(18, 183, 245, 0.35);
+        }
+
+        .login-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .loading {
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .login-footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e8e8e8;
+        }
+
+        .login-footer p {
+            color: #888888;
+            font-size: 12px;
+        }
+
+        .register-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .register-link p {
+            color: #555555;
+            font-size: 14px;
+        }
+
+        .register-link a {
+            color: #12B7F5;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .register-link a:hover {
+            text-decoration: underline;
+        }
+
+        .role-switch {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e8e8e8;
+        }
+
+        .role-switch p {
+            color: #555555;
+            font-size: 13px;
+            margin-bottom: 10px;
+        }
+
+        .role-switch a {
+            color: #12B7F5;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .role-switch a:hover {
+            text-decoration: underline;
+        }
+
+        .login-background {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .bg-circle {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            animation: float 20s infinite ease-in-out;
+        }
+
+        .circle-1 {
+            width: 300px;
+            height: 300px;
+            top: -100px;
+            left: -100px;
+        }
+
+        .circle-2 {
+            width: 200px;
+            height: 200px;
+            bottom: -50px;
+            right: -50px;
+            animation-delay: 5s;
+        }
+
+        .circle-3 {
+            width: 150px;
+            height: 150px;
+            top: 50%;
+            right: 10%;
+            animation-delay: 10s;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translate(0, 0) scale(1);
+            }
+            33% {
+                transform: translate(30px, -30px) scale(1.1);
+            }
+            66% {
+                transform: translate(-20px, 20px) scale(0.9);
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="login-container">
+    <div class="login-box">
+        <div class="login-header">
+            <h1>EasyBoke</h1>
+            <p>读者登录</p>
+        </div>
+
+        <form id="loginForm" class="login-form">
+            <div class="form-group">
+                <label for="username">用户名</label>
+                <input
+                        type="text"
+                        id="username"
+                        name="username"
+                        placeholder="请输入用户名"
+                        required
+                >
+                <span class="error-message" id="usernameError"></span>
+            </div>
+
+            <div class="form-group">
+                <label for="password">密码</label>
+                <input
+                        type="password"
+                        id="password"
+                        name="password"
+                        placeholder="请输入密码"
+                        required
+                >
+                <span class="error-message" id="passwordError"></span>
+            </div>
+
+            <button type="submit" class="login-btn" id="loginBtn">
+                <span class="btn-text">登 录</span>
+                <span class="loading">
+                        <i class="loading-spinner"></i> 登录中...
+                    </span>
+            </button>
+        </form>
+
+        <div class="register-link">
+            <p>还没有账号？<a href="/user/register">立即注册</a></p>
+        </div>
+
+        <div class="role-switch">
+            <p>是博主？</p>
+            <a href="/admin/login">进入后台管理</a>
+        </div>
+
+        <div class="login-footer">
+            <p>&copy; 2026 EasyBoke. All rights reserved.</p>
+        </div>
+    </div>
+
+    <div class="login-background">
+        <div class="bg-circle circle-1"></div>
+        <div class="bg-circle circle-2"></div>
+        <div class="bg-circle circle-3"></div>
+    </div>
+    </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const loginForm = document.getElementById('loginForm');
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+        const loginBtn = document.getElementById('loginBtn');
+        const btnText = loginBtn.querySelector('.btn-text');
+        const loading = loginBtn.querySelector('.loading');
+
+        loginForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            clearErrors();
+
+            if (!validateForm()) {
+                return;
+            }
+
+            handleLogin();
+        });
+
+        usernameInput.addEventListener('input', function() {
+            this.classList.remove('error');
+            document.getElementById('usernameError').textContent = '';
+        });
+
+        passwordInput.addEventListener('input', function() {
+            this.classList.remove('error');
+            document.getElementById('passwordError').textContent = '';
+        });
+
+        function validateForm() {
+            let isValid = true;
+
+            const username = usernameInput.value.trim();
+            if (!username) {
+                showError('username', '请输入用户名');
+                isValid = false;
+            }
+
+            const password = passwordInput.value;
+            if (!password) {
+                showError('password', '请输入密码');
+                isValid = false;
+            }
+
+            return isValid;
+        }
+
+        function showError(field, message) {
+            document.getElementById(field).classList.add('error');
+            document.getElementById(field + 'Error').textContent = message;
+        }
+
+        function clearErrors() {
+            document.querySelectorAll('.form-group input').forEach(input => {
+                input.classList.remove('error');
+            });
+            document.querySelectorAll('.error-message').forEach(error => {
+                error.textContent = '';
+            });
+        }
+
+        async function handleLogin() {
+            const username = usernameInput.value.trim();
+            const password = passwordInput.value;
+
+            setLoading(true);
+
+            try {
+                const response = await fetch('/user/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        username: username,
+                        password: password
+                    })
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.status === 'success') {
+                    showSuccess('登录成功，正在跳转...');
+                    setTimeout(() => {
+                        window.location.href = '/';
+                    }, 1000);
+                } else {
+                    showError('password', result.info || '用户名或密码错误');
+                }
+            } catch (error) {
+                console.error('登录失败:', error);
+                showError('password', '网络错误，请稍后重试');
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        function setLoading(isLoading) {
+            if (isLoading) {
+                loginBtn.disabled = true;
+                btnText.style.display = 'none';
+                loading.style.display = 'inline-flex';
+            } else {
+                loginBtn.disabled = false;
+                btnText.style.display = 'inline';
+                loading.style.display = 'none';
+            }
+        }
+
+        function showSuccess(message) {
+            const successDiv = document.createElement('div');
+            successDiv.textContent = message;
+            successDiv.style.cssText = `
+                position: fixed;
+                top: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: #67c23a;
+                color: white;
+                padding: 12px 24px;
+                border-radius: 12px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                z-index: 1000;
+            `;
+
+            document.body.appendChild(successDiv);
+
+            setTimeout(() => {
+                successDiv.remove();
+            }, 2000);
+        }
+        usernameInput.focus();
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.easyboke.mappers.ArticleTagMapper">
+    <!--实体映射-->
+    <resultMap id="base_result_map" type="com.easyboke.entity.po.ArticleTag">
+        <!--ID-->
+        <id column="id" property="id"/>
+        <!--文章ID-->
+        <result column="article_id" property="articleId"/>
+        <!--标签ID-->
+        <result column="tag_id" property="tagId"/>
+   </resultMap>
+    <!--通用查询结果列-->
+<sql id="base_column_list">
+	id,article_id,tag_id
+    </sql>
+
+    <!--基础查询条件-->
+    <sql id="base_query_condition">
+		<if test="query.id!=null">
+			and id=#{query.id} 
+		</if>
+		<if test="query.articleId!=null">
+			and article_id=#{query.articleId} 
+		</if>
+		<if test="query.tagId!=null">
+			and tag_id=#{query.tagId} 
+		</if>
+    </sql>
+    <!--扩展查询条件-->
+    <sql id="base_query_condition_extend">
+    </sql>
+    <!--通用查询条件-->
+    <sql id="query_condition">
+		<where>
+			<include refid="base_query_condition"/>
+			<include refid="base_query_condition_extend"/>
+		</where>
+    </sql>
+    <!--查询列表-->
+	<select id="selectList" resultMap="base_result_map">
+		SELECT <include refid="base_column_list"/> FROM article_tag <include refid="query_condition"/>
+		<if test="query.orderBy!=null"> order by ${query.orderBy}</if>
+		<if test="query.simplePage!=null">limit #{query.simplePage.start},#{query.simplePage.end}</if>
+	</select>
+  <!--查询数量-->
+	<select id="selectCount"  resultType="java.lang.Integer">
+		SELECT count(1) FROM article_tag <include refid="query_condition"/>
+	</select>
+    <!--插入(匹配有值的字段)-->
+	<insert id="insert"  parameterType="com.easyboke.entity.po.ArticleTag">
+		<selectKey keyProperty="bean.id" resultType="Integer" order="AFTER">
+			SELECT LAST_INSERT_ID();
+		</selectKey>
+		insert into article_tag
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="bean.id!=null">
+				id,
+			</if>
+			<if test="bean.articleId!=null">
+				article_id,
+			</if>
+			<if test="bean.tagId!=null">
+				tag_id,
+			</if>
+		</trim>
+		<trim prefix="values(" suffix=")" suffixOverrides=",">
+ 			<if test="bean.id!=null">
+ 				#{bean.id},
+			 </if>
+ 			<if test="bean.articleId!=null">
+ 				#{bean.articleId},
+			 </if>
+ 			<if test="bean.tagId!=null">
+ 				#{bean.tagId},
+			 </if>
+		 </trim>
+	</insert>
+    <!--插入或者更新(匹配有值的字段)-->
+	<insert id="insertOrUpdate"  parameterType="com.easyboke.entity.po.ArticleTag">
+		insert into article_tag
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="bean.id!=null">
+				id,
+			</if>
+			<if test="bean.articleId!=null">
+				article_id,
+			</if>
+			<if test="bean.tagId!=null">
+				tag_id,
+			</if>
+		</trim>
+		<trim prefix="values(" suffix=")" suffixOverrides=",">
+ 			<if test="bean.id!=null">
+ 				#{bean.id},
+			 </if>
+ 			<if test="bean.articleId!=null">
+ 				#{bean.articleId},
+			 </if>
+ 			<if test="bean.tagId!=null">
+ 				#{bean.tagId},
+			 </if>
+		 </trim>
+		on DUPLICATE key update
+		<trim prefix="" suffix="" suffixOverrides=",">
+
+		</trim>
+	</insert>
+	<!--添加(批量插入)-->
+	<insert id="insertBatch" parameterType="com.easyboke.entity.po.ArticleTag">
+		insert into article_tag(article_id,tag_id)values
+		<foreach collection="list" item="item" separator=",">
+			(#{item.articleId},#{item.tagId})
+		</foreach>
+	 </insert>
+	<!--批量插入或更新-->
+	<insert id="insertOrUpdateBatch" parameterType="com.easyboke.entity.po.ArticleTag">
+		insert into article_tag(article_id,tag_id)values
+		<foreach collection="list" item="item" separator=",">
+			(#{item.articleId},#{item.tagId})
+		</foreach>
+			on DUPLICATE key update
+            id= VALUES(id),article_id= VALUES(article_id),tag_id= VALUES(tag_id)
+	</insert>
+	<!-- 根据"Id"查询-->
+	<select id="selectById" resultMap="base_result_map">
+		select <include refid="base_column_list"/>  from article_tag where id=#{id}
+	</select>
+	<!-- 根据"Id"更新-->
+	<update id="updateById" parameterType="com.easyboke.entity.po.ArticleTag">
+		update  article_tag
+		<set>
+			<if test="bean.id!=null">
+			id=#{bean.id},
+			</if>
+			<if test="bean.articleId!=null">
+			article_id=#{bean.articleId},
+			</if>
+			<if test="bean.tagId!=null">
+			tag_id=#{bean.tagId},
+			</if>
+		</set>
+		<where>
+			id=#{id}
+		</where>
+	</update>
+
+	<!-- 根据"Id"删除-->
+	<delete id="deleteById">
+		delete from article_tag where id=#{id}
+	</delete>
+
+	<!-- 根据"ArticleIdAndTagId"查询-->
+	<select id="selectByArticleIdAndTagId" resultMap="base_result_map">
+		select <include refid="base_column_list"/>  from article_tag where article_id=#{articleId} and tag_id=#{tagId}
+	</select>
+	<!-- 根据"ArticleIdAndTagId"更新-->
+	<update id="updateByArticleIdAndTagId" parameterType="com.easyboke.entity.po.ArticleTag">
+		update  article_tag
+		<set>
+			<if test="bean.id!=null">
+			id=#{bean.id},
+			</if>
+			<if test="bean.articleId!=null">
+			article_id=#{bean.articleId},
+			</if>
+			<if test="bean.tagId!=null">
+			tag_id=#{bean.tagId},
+			</if>
+		</set>
+		<where>
+			article_id=#{articleId} and tag_id=#{tagId}
+		</where>
+	</update>
+
+	<!-- 根据"ArticleIdAndTagId"删除-->
+	<delete id="deleteByArticleIdAndTagId">
+		delete from article_tag where article_id=#{articleId} and tag_id=#{tagId}
+	</delete>
+
+	<!-- 根据文章ID删除所有关联 -->
+	<delete id="deleteByArticleId">
+		delete from article_tag where article_id=#{articleId}
+	</delete>
+
+</mapper>

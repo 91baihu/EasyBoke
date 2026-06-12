@@ -1,0 +1,343 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.easyboke.mappers.VisitLogMapper">
+    <!--实体映射-->
+    <resultMap id="base_result_map" type="com.easyboke.entity.po.VisitLog">
+        <!--ID-->
+        <id column="id" property="id"/>
+        <!--访问类型：article/video-->
+        <result column="target_type" property="targetType"/>
+        <!--目标ID-->
+        <result column="target_id" property="targetId"/>
+        <!--访问者ID，0表示游客-->
+        <result column="user_id" property="userId"/>
+        <!--访问者性别：0-未知，1-男，2-女-->
+        <result column="gender" property="gender"/>
+        <!--访问者年龄，0表示未知-->
+        <result column="age" property="age"/>
+        <!--访问IP-->
+        <result column="ip_address" property="ipAddress"/>
+        <!--浏览器信息-->
+        <result column="user_agent" property="userAgent"/>
+        <!--访问时间-->
+        <result column="visit_time" property="visitTime"/>
+   </resultMap>
+    <!--通用查询结果列-->
+<sql id="base_column_list">
+	id,target_type,target_id,user_id,gender,age,ip_address,user_agent,visit_time
+    </sql>
+
+    <!--基础查询条件-->
+    <sql id="base_query_condition">
+		<if test="query.id!=null">
+			and id=#{query.id} 
+		</if>
+		<if test="query.targetType!=null and query.targetType!=''">
+			and target_type=#{query.targetType} 
+		</if>
+		<if test="query.targetId!=null">
+			and target_id=#{query.targetId} 
+		</if>
+		<if test="query.userId!=null">
+			and user_id=#{query.userId} 
+		</if>
+		<if test="query.gender!=null">
+			and gender=#{query.gender} 
+		</if>
+		<if test="query.age!=null">
+			and age=#{query.age} 
+		</if>
+		<if test="query.ipAddress!=null and query.ipAddress!=''">
+			and ip_address=#{query.ipAddress} 
+		</if>
+		<if test="query.userAgent!=null and query.userAgent!=''">
+			and user_agent=#{query.userAgent} 
+		</if>
+		<if test="query.visitTime!=null">
+			and visit_time=#{query.visitTime} 
+		</if>
+    </sql>
+    <!--扩展查询条件-->
+    <sql id="base_query_condition_extend">
+		<if test="query.targetTypeFuzzy!=null and query.targetTypeFuzzy!=''">
+			and target_type like concat('%',#{query.targetTypeFuzzy},'%')
+		</if>
+		<if test="query.ipAddressFuzzy!=null and query.ipAddressFuzzy!=''">
+			and ip_address like concat('%',#{query.ipAddressFuzzy},'%')
+		</if>
+		<if test="query.userAgentFuzzy!=null and query.userAgentFuzzy!=''">
+			and user_agent like concat('%',#{query.userAgentFuzzy},'%')
+		</if>
+		<if test="query.visitTimeStart!=null and query.visitTimeStart!=''">
+			<![CDATA[ and  visit_time >= str_to_date(#{query.visitTimeStart},'%Y-%m-%d') ]]>
+		</if>
+		<if test="query.visitTimeEnd!=null and query.visitTimeEnd!=''">
+			<![CDATA[ and  visit_time < date_sub(str_to_date(#{query.visitTimeEnd},'%Y-%m-%d'),interval -1 day) ]]>
+		</if>
+    </sql>
+    <!--通用查询条件-->
+    <sql id="query_condition">
+		<where>
+			<include refid="base_query_condition"/>
+			<include refid="base_query_condition_extend"/>
+		</where>
+    </sql>
+    <!--查询列表-->
+	<select id="selectList" resultMap="base_result_map">
+		SELECT <include refid="base_column_list"/> FROM visit_log <include refid="query_condition"/>
+		<if test="query.orderBy!=null"> order by ${query.orderBy}</if>
+		<if test="query.simplePage!=null">limit #{query.simplePage.start},#{query.simplePage.end}</if>
+	</select>
+  <!--查询数量-->
+	<select id="selectCount"  resultType="java.lang.Integer">
+		SELECT count(1) FROM visit_log <include refid="query_condition"/>
+	</select>
+    <!--插入(匹配有值的字段)-->
+	<insert id="insert"  parameterType="com.easyboke.entity.po.VisitLog">
+		<selectKey keyProperty="bean.id" resultType="Integer" order="AFTER">
+			SELECT LAST_INSERT_ID();
+		</selectKey>
+		insert into visit_log
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="bean.id!=null">
+				id,
+			</if>
+			<if test="bean.targetType!=null">
+				target_type,
+			</if>
+			<if test="bean.targetId!=null">
+				target_id,
+			</if>
+			<if test="bean.userId!=null">
+				user_id,
+			</if>
+			<if test="bean.gender!=null">
+				gender,
+			</if>
+			<if test="bean.age!=null">
+				age,
+			</if>
+			<if test="bean.ipAddress!=null">
+				ip_address,
+			</if>
+			<if test="bean.userAgent!=null">
+				user_agent,
+			</if>
+			<if test="bean.visitTime!=null">
+				visit_time,
+			</if>
+		</trim>
+		<trim prefix="values(" suffix=")" suffixOverrides=",">
+ 			<if test="bean.id!=null">
+ 				#{bean.id},
+			 </if>
+ 			<if test="bean.targetType!=null">
+ 				#{bean.targetType},
+			 </if>
+ 			<if test="bean.targetId!=null">
+ 				#{bean.targetId},
+			 </if>
+ 			<if test="bean.userId!=null">
+ 				#{bean.userId},
+			 </if>
+ 			<if test="bean.gender!=null">
+ 				#{bean.gender},
+			 </if>
+ 			<if test="bean.age!=null">
+ 				#{bean.age},
+			 </if>
+ 			<if test="bean.ipAddress!=null">
+ 				#{bean.ipAddress},
+			 </if>
+ 			<if test="bean.userAgent!=null">
+ 				#{bean.userAgent},
+			 </if>
+ 			<if test="bean.visitTime!=null">
+ 				#{bean.visitTime},
+			 </if>
+		 </trim>
+	</insert>
+    <!--插入或者更新(匹配有值的字段)-->
+	<insert id="insertOrUpdate"  parameterType="com.easyboke.entity.po.VisitLog">
+		insert into visit_log
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="bean.id!=null">
+				id,
+			</if>
+			<if test="bean.targetType!=null">
+				target_type,
+			</if>
+			<if test="bean.targetId!=null">
+				target_id,
+			</if>
+			<if test="bean.userId!=null">
+				user_id,
+			</if>
+			<if test="bean.gender!=null">
+				gender,
+			</if>
+			<if test="bean.age!=null">
+				age,
+			</if>
+			<if test="bean.ipAddress!=null">
+				ip_address,
+			</if>
+			<if test="bean.userAgent!=null">
+				user_agent,
+			</if>
+			<if test="bean.visitTime!=null">
+				visit_time,
+			</if>
+		</trim>
+		<trim prefix="values(" suffix=")" suffixOverrides=",">
+ 			<if test="bean.id!=null">
+ 				#{bean.id},
+			 </if>
+ 			<if test="bean.targetType!=null">
+ 				#{bean.targetType},
+			 </if>
+ 			<if test="bean.targetId!=null">
+ 				#{bean.targetId},
+			 </if>
+ 			<if test="bean.userId!=null">
+ 				#{bean.userId},
+			 </if>
+ 			<if test="bean.gender!=null">
+ 				#{bean.gender},
+			 </if>
+ 			<if test="bean.age!=null">
+ 				#{bean.age},
+			 </if>
+ 			<if test="bean.ipAddress!=null">
+ 				#{bean.ipAddress},
+			 </if>
+ 			<if test="bean.userAgent!=null">
+ 				#{bean.userAgent},
+			 </if>
+ 			<if test="bean.visitTime!=null">
+ 				#{bean.visitTime},
+			 </if>
+		 </trim>
+		on DUPLICATE key update
+		<trim prefix="" suffix="" suffixOverrides=",">
+			<if test="bean.targetType!=null">
+				target_type =VALUES(target_type),
+			</if>
+			<if test="bean.targetId!=null">
+				target_id =VALUES(target_id),
+			</if>
+			<if test="bean.userId!=null">
+				user_id =VALUES(user_id),
+			</if>
+			<if test="bean.gender!=null">
+				gender =VALUES(gender),
+			</if>
+			<if test="bean.age!=null">
+				age =VALUES(age),
+			</if>
+			<if test="bean.ipAddress!=null">
+				ip_address =VALUES(ip_address),
+			</if>
+			<if test="bean.userAgent!=null">
+				user_agent =VALUES(user_agent),
+			</if>
+			<if test="bean.visitTime!=null">
+				visit_time =VALUES(visit_time),
+			</if>
+
+		</trim>
+	</insert>
+	<!--添加(批量插入)-->
+	<insert id="insertBatch" parameterType="com.easyboke.entity.po.VisitLog">
+		insert into visit_log(target_type,target_id,user_id,gender,age,ip_address,user_agent,visit_time)values
+		<foreach collection="list" item="item" separator=",">
+			(#{item.targetType},#{item.targetId},#{item.userId},#{item.gender},#{item.age},#{item.ipAddress},#{item.userAgent},#{item.visitTime})
+		</foreach>
+	 </insert>
+	<!--批量插入或更新-->
+	<insert id="insertOrUpdateBatch" parameterType="com.easyboke.entity.po.VisitLog">
+		insert into visit_log(target_type,target_id,user_id,gender,age,ip_address,user_agent,visit_time)values
+		<foreach collection="list" item="item" separator=",">
+			(#{item.targetType},#{item.targetId},#{item.userId},#{item.gender},#{item.age},#{item.ipAddress},#{item.userAgent},#{item.visitTime})
+		</foreach>
+			on DUPLICATE key update
+            id= VALUES(id),target_type= VALUES(target_type),target_id= VALUES(target_id),user_id= VALUES(user_id),gender= VALUES(gender),age= VALUES(age),ip_address= VALUES(ip_address),user_agent= VALUES(user_agent),visit_time= VALUES(visit_time)
+	</insert>
+	<!-- 根据"Id"查询-->
+	<select id="selectById" resultMap="base_result_map">
+		select <include refid="base_column_list"/>  from visit_log where id=#{id}
+	</select>
+	<!-- 根据"Id"更新-->
+	<update id="updateById" parameterType="com.easyboke.entity.po.VisitLog">
+		update  visit_log
+		<set>
+			<if test="bean.id!=null">
+			id=#{bean.id},
+			</if>
+			<if test="bean.targetType!=null">
+			target_type=#{bean.targetType},
+			</if>
+			<if test="bean.targetId!=null">
+			target_id=#{bean.targetId},
+			</if>
+			<if test="bean.userId!=null">
+			user_id=#{bean.userId},
+			</if>
+			<if test="bean.gender!=null">
+			gender=#{bean.gender},
+			</if>
+			<if test="bean.age!=null">
+			age=#{bean.age},
+			</if>
+			<if test="bean.ipAddress!=null">
+			ip_address=#{bean.ipAddress},
+			</if>
+			<if test="bean.userAgent!=null">
+			user_agent=#{bean.userAgent},
+			</if>
+			<if test="bean.visitTime!=null">
+			visit_time=#{bean.visitTime},
+			</if>
+		</set>
+		<where>
+			id=#{id}
+		</where>
+	</update>
+
+	<!-- 根据"Id"删除-->
+	<delete id="deleteById">
+		delete from visit_log where id=#{id}
+	</delete>
+
+    <!-- 统计查询：总访问量、今日访问量、独立IP数 -->
+    <select id="selectStatsSummary" resultType="java.util.HashMap">
+        SELECT
+            (SELECT COUNT(*) FROM visit_log) as totalVisits,
+            (SELECT COUNT(*) FROM visit_log WHERE DATE(visit_time) = CURDATE()) as todayVisits,
+            (SELECT COUNT(DISTINCT ip_address) FROM visit_log) as uniqueIpCount,
+            (SELECT COUNT(*) FROM visit_log WHERE user_id > 0) as userVisitCount,
+            (SELECT COUNT(*) FROM visit_log WHERE user_id = 0) as guestVisitCount
+    </select>
+
+    <!-- 统计查询：文章/视频/标签/分类 TOP排行（按访问量） -->
+    <select id="selectTopTargets" resultType="java.util.HashMap">
+        SELECT target_type as targetType, target_id as targetId, COUNT(*) as visitCount
+        FROM visit_log
+        WHERE target_type = #{targetType}
+        GROUP BY target_id
+        ORDER BY visitCount DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 统计查询：分类文章访问量占比 -->
+    <select id="selectCategoryStats" resultType="java.util.HashMap">
+        SELECT c.id as categoryId, c.name as categoryName, COUNT(vl.id) as visitCount
+        FROM article a
+        LEFT JOIN category c ON a.category_id = c.id
+        LEFT JOIN visit_log vl ON vl.target_id = a.id AND vl.target_type = 'article'
+        WHERE a.status = 1
+        GROUP BY c.id, c.name
+        ORDER BY visitCount DESC
+    </select>
+
+</mapper>

@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文章分类 - EasyBoke</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: #F5F6F7;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+            padding: 15px 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #12B7F5;
+            cursor: pointer;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .nav-menu a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-menu a:hover, .nav-menu a.active {
+            color: #12B7F5;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .username {
+            color: #12B7F5;
+            font-weight: bold;
+        }
+
+        .btn {
+            padding: 8px 20px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #12B7F5;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0099FF;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(18, 183, 245, 0.3);
+        }
+
+        .btn-danger {
+            background: #f56c6c;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #e04a4a;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(245, 108, 108, 0.3);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .category-card {
+            background: #FFFFFF;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s, box-shadow 0.3s;
+            border: 3px solid transparent;
+        }
+
+        .category-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+        }
+
+        .category-card.active {
+            border-color: #12B7F5;
+            background: #f0f9ff;
+        }
+
+        .category-card .category-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: #1A1A2E;
+            margin-bottom: 8px;
+        }
+
+        .category-card .category-count {
+            font-size: 14px;
+            color: #999;
+        }
+
+        .section-title {
+            color: #1A1A2E;
+            font-size: 24px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e8e8e8;
+        }
+
+        .article-list {
+            display: grid;
+            gap: 20px;
+        }
+
+        .article-card {
+            background: #FFFFFF;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+        }
+
+        .article-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+        }
+
+        .article-title {
+            font-size: 22px;
+            color: #1A1A2E;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .article-summary {
+            color: #555555;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .article-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #888888;
+            font-size: 14px;
+        }
+
+        .article-stats {
+            display: flex;
+            gap: 20px;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: #888888;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 30px;
+            padding: 20px;
+        }
+
+        .pagination button {
+            padding: 8px 15px;
+            border: 2px solid #ddd;
+            background: #FFFFFF;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: #555555;
+        }
+
+        .pagination button:hover:not(:disabled) {
+            background: #12B7F5;
+            color: white;
+            border-color: #12B7F5;
+        }
+
+        .pagination button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .pagination span {
+            color: #555555;
+            line-height: 35px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: #888888;
+            font-size: 18px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 50px;
+            color: #888888;
+            background: #FFFFFF;
+            border-radius: 12px;
+        }
+    </style>
+</head>
+<body>
+<div class="header">
+    <div class="header-content">
+        <div class="logo" onclick="window.location.href='/index.html'">EasyBoke</div>
+        <div class="nav-menu">
+            <a href="/index.html">首页</a>
+            <a href="/category.html" class="active">分类</a>
+            <a href="/tag.html">标签</a>
+            <a href="/video-list.html">视频</a>
+        </div>
+        <div class="user-info" id="userInfo">
+            <button class="btn btn-primary" onclick="window.location.href='/login.html'">登录</button>
+            <button class="btn btn-primary" onclick="window.location.href='/register.html'">注册</button>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <h2 class="section-title">文章分类</h2>
+    <div class="category-grid" id="categoryGrid">
+        <div class="loading">加载分类中...</div>
+    </div>
+
+    <h2 class="section-title" id="articleSectionTitle" style="display:none;">分类文章</h2>
+    <div class="article-list" id="articleList"></div>
+    <div class="pagination" id="pagination"></div>
+</div>
+
+<script>
+    let currentUser = null;
+    let selectedCategoryId = null;
+    let currentPage = 1;
+    const pageSize = 10;
+
+    window.onload = function() {
+        loadCurrentUser();
+        loadCategories();
+    };
+
+    async function loadCurrentUser() {
+        try {
+            const response = await fetch('/user/currentUser');
+            const result = await response.json();
+            if (result.status === 'success' && result.data) {
+                currentUser = result.data;
+                const avatarHtml = currentUser.avatar
+                    ? `<img src="${currentUser.avatar}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;vertical-align:middle;" onerror="this.style.display='none'">`
+                    : '';
+                document.getElementById('userInfo').innerHTML = `
+                    <span class="username">${avatarHtml} ${currentUser.username}</span>
+                    <button class="btn btn-primary" onclick="window.location.href='/profile.html'">个人中心</button>
+                    <button class="btn btn-danger" onclick="logout()">退出</button>
+                `;
+            }
+        } catch (error) {
+            console.error('加载用户信息失败:', error);
+        }
+    }
+
+    async function loadCategories() {
+        try {
+            const response = await fetch('/category/loadDataList?pageNo=1&pageSize=100');
+            const result = await response.json();
+            if (result.status === 'success' && result.data && result.data.list) {
+                renderCategories(result.data.list);
+            } else {
+                document.getElementById('categoryGrid').innerHTML = '<div class="empty-state">暂无分类</div>';
+            }
+        } catch (error) {
+            console.error('加载分类失败:', error);
+            document.getElementById('categoryGrid').innerHTML = '<div class="empty-state">加载失败，请刷新重试</div>';
+        }
+    }
+
+    function renderCategories(categories) {
+        const grid = document.getElementById('categoryGrid');
+        if (categories.length === 0) {
+            grid.innerHTML = '<div class="empty-state">暂无分类</div>';
+            return;
+        }
+
+        grid.innerHTML = categories.map(cat => `
+            <div class="category-card" onclick="selectCategory(${cat.id}, '${escapeHtml(cat.categoryName || '')}')" data-cat-id="${cat.id}">
+                <div class="category-name">${escapeHtml(cat.categoryName || '未分类')}</div>
+                <div class="category-count">点击查看相关文章</div>
+            </div>
+        `).join('');
+    }
+
+    function selectCategory(categoryId, categoryName) {
+        selectedCategoryId = categoryId;
+        currentPage = 1;
+
+        document.querySelectorAll('.category-card').forEach(card => card.classList.remove('active'));
+        const activeCard = document.querySelector(`[data-cat-id="${categoryId}"]`);
+        if (activeCard) activeCard.classList.add('active');
+
+        document.getElementById('articleSectionTitle').style.display = 'block';
+        document.getElementById('articleSectionTitle').textContent = '分类：' + categoryName;
+        loadArticles();
+    }
+
+    async function loadArticles() {
+        if (!selectedCategoryId) return;
+
+        const articleList = document.getElementById('articleList');
+        articleList.innerHTML = '<div class="loading">加载中...</div>';
+
+        try {
+            const response = await fetch(`/article/listByCategory?categoryId=${selectedCategoryId}&status=1`);
+            const result = await response.json();
+
+            if (result.status === 'success' && result.data && result.data.length > 0) {
+                renderArticles(result.data);
+            } else {
+                articleList.innerHTML = '<div class="empty-state">该分类下暂无文章</div>';
+                document.getElementById('pagination').innerHTML = '';
+            }
+        } catch (error) {
+            console.error('加载文章失败:', error);
+            articleList.innerHTML = '<div class="empty-state">加载失败，请刷新重试</div>';
+        }
+    }
+
+    function renderArticles(articles) {
+        const articleList = document.getElementById('articleList');
+        articleList.innerHTML = articles.map(article => {
+            const publishTime = article.publishTime ? formatDate(article.publishTime) : '';
+            return `
+                <div class="article-card" onclick="viewArticle(${article.id})">
+                    <h2 class="article-title">${escapeHtml(article.title)}</h2>
+                    <p class="article-summary">${escapeHtml(article.summary || '暂无摘要')}</p>
+                    <div class="article-meta">
+                        <span>${publishTime}</span>
+                        <div class="article-stats">
+                            <span class="stat-item">阅读 ${article.viewCount || 0}</span>
+                            <span class="stat-item">评论 ${article.commentCount || 0}</span>
+                            <span class="stat-item">点赞 ${article.likeCount || 0}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        document.getElementById('pagination').innerHTML = '';
+    }
+
+    function viewArticle(id) {
+        window.location.href = `/article-detail.html?id=${id}`;
+    }
+
+    async function logout() {
+        if (confirm('确定要退出登录吗？')) {
+            try {
+                await fetch('/user/logout', { method: 'POST' });
+                window.location.reload();
+            } catch (error) {
+                console.error('退出失败:', error);
+            }
+        }
+    }
+
+    function formatDate(dateStr) {
+        if (!dateStr) return '-';
+        const date = new Date(dateStr);
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        const seconds = String(date.getSeconds()).padStart(2, '0');
+        return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+    }
+
+    function escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+</script>
+</body>
+</html>

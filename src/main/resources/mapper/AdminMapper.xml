@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+		<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+				"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.easyboke.mappers.AdminMapper">
+
+	<resultMap id="baseResultMap" type="com.easyboke.entity.po.Admin">
+		<result column="id" property="id"/>
+		<result column="username" property="username"/>
+		<result column="password" property="password"/>
+		<result column="nickname" property="nickname"/>
+		<result column="avatar" property="avatar"/>
+		<result column="email" property="email"/>
+		<result column="phone" property="phone"/>
+		<result column="gender" property="gender"/>
+		<result column="age" property="age"/>
+		<result column="introduction" property="introduction"/>
+		<result column="status" property="status"/>
+		<result column="create_time" property="createTime"/>
+		<result column="update_time" property="updateTime"/>
+	</resultMap>
+
+	<sql id="base_column_list">
+		id, username, password, nickname, avatar, email, phone, gender, age,
+		introduction, status, create_time, update_time
+	</sql>
+
+	<select id="selectList" resultMap="baseResultMap">
+		SELECT <include refid="base_column_list"/>
+		FROM admin
+		<where>
+			<if test="query.username != null and query.username != ''">
+				AND username LIKE CONCAT('%', #{query.username}, '%')
+			</if>
+			<if test="query.status != null">
+				AND status = #{query.status}
+			</if>
+		</where>
+		ORDER BY create_time DESC
+	</select>
+
+	<select id="selectCount" resultType="java.lang.Integer">
+		SELECT COUNT(*) FROM admin
+		<where>
+			<if test="query.username != null and query.username != ''">
+				AND username LIKE CONCAT('%', #{query.username}, '%')
+			</if>
+			<if test="query.status != null">
+				AND status = #{query.status}
+			</if>
+		</where>
+	</select>
+
+	<select id="selectById" resultMap="baseResultMap">
+		SELECT <include refid="base_column_list"/>
+		FROM admin
+		WHERE id = #{id}
+	</select>
+
+	<select id="selectByUsername" resultMap="baseResultMap">
+		SELECT <include refid="base_column_list"/>
+		FROM admin
+		WHERE username = #{username}
+	</select>
+
+	<insert id="insert" useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO admin (
+		username, password, nickname, avatar, email, phone,
+		gender, age, introduction, status
+		) VALUES (
+		#{bean.username}, #{bean.password}, #{bean.nickname}, #{bean.avatar},
+		#{bean.email}, #{bean.phone}, #{bean.gender}, #{bean.age},
+		#{bean.introduction}, #{bean.status}
+		)
+	</insert>
+
+	<insert id="insertBatch">
+		INSERT INTO admin (
+		username, password, nickname, avatar, email, phone,
+		gender, age, introduction, status
+		) VALUES
+		<foreach collection="list" item="bean" separator=",">
+			(
+			#{bean.username}, #{bean.password}, #{bean.nickname}, #{bean.avatar},
+			#{bean.email}, #{bean.phone}, #{bean.gender}, #{bean.age},
+			#{bean.introduction}, #{bean.status}
+			)
+		</foreach>
+	</insert>
+
+	<insert id="insertOrUpdate">
+		INSERT INTO admin (
+		username, password, nickname, avatar, email, phone,
+		gender, age, introduction, status
+		) VALUES (
+		#{bean.username}, #{bean.password}, #{bean.nickname}, #{bean.avatar},
+		#{bean.email}, #{bean.phone}, #{bean.gender}, #{bean.age},
+		#{bean.introduction}, #{bean.status}
+		)
+		ON DUPLICATE KEY UPDATE
+		password = VALUES(password),
+		nickname = VALUES(nickname),
+		avatar = VALUES(avatar),
+		email = VALUES(email),
+		phone = VALUES(phone),
+		gender = VALUES(gender),
+		age = VALUES(age),
+		introduction = VALUES(introduction),
+		status = VALUES(status)
+	</insert>
+
+	<insert id="insertOrUpdateBatch">
+		INSERT INTO admin (
+		username, password, nickname, avatar, email, phone,
+		gender, age, introduction, status
+		) VALUES
+		<foreach collection="list" item="bean" separator=",">
+			(
+			#{bean.username}, #{bean.password}, #{bean.nickname}, #{bean.avatar},
+			#{bean.email}, #{bean.phone}, #{bean.gender}, #{bean.age},
+			#{bean.introduction}, #{bean.status}
+			)
+		</foreach>
+		ON DUPLICATE KEY UPDATE
+		password = VALUES(password),
+		nickname = VALUES(nickname),
+		avatar = VALUES(avatar),
+		email = VALUES(email),
+		phone = VALUES(phone),
+		gender = VALUES(gender),
+		age = VALUES(age),
+		introduction = VALUES(introduction),
+		status = VALUES(status)
+	</insert>
+
+	<update id="updateById">
+		UPDATE admin
+		<set>
+			<if test="bean.password != null and bean.password != ''">
+				password = #{bean.password},
+			</if>
+			<if test="bean.nickname != null">
+				nickname = #{bean.nickname},
+			</if>
+			<if test="bean.avatar != null">
+				avatar = #{bean.avatar},
+			</if>
+			<if test="bean.email != null">
+				email = #{bean.email},
+			</if>
+			<if test="bean.phone != null">
+				phone = #{bean.phone},
+			</if>
+			<if test="bean.gender != null">
+				gender = #{bean.gender},
+			</if>
+			<if test="bean.age != null">
+				age = #{bean.age},
+			</if>
+			<if test="bean.introduction != null">
+				introduction = #{bean.introduction},
+			</if>
+			<if test="bean.status != null">
+				status = #{bean.status},
+			</if>
+		</set>
+		WHERE id = #{id}
+	</update>
+
+	<update id="updateByUsername">
+		UPDATE admin
+		<set>
+			<if test="bean.password != null and bean.password != ''">
+				password = #{bean.password},
+			</if>
+			<if test="bean.nickname != null">
+				nickname = #{bean.nickname},
+			</if>
+			<if test="bean.avatar != null">
+				avatar = #{bean.avatar},
+			</if>
+			<if test="bean.email != null">
+				email = #{bean.email},
+			</if>
+			<if test="bean.phone != null">
+				phone = #{bean.phone},
+			</if>
+			<if test="bean.gender != null">
+				gender = #{bean.gender},
+			</if>
+			<if test="bean.age != null">
+				age = #{bean.age},
+			</if>
+			<if test="bean.introduction != null">
+				introduction = #{bean.introduction},
+			</if>
+			<if test="bean.status != null">
+				status = #{bean.status},
+			</if>
+		</set>
+		WHERE username = #{username}
+	</update>
+
+	<delete id="deleteById">
+		DELETE FROM admin WHERE id = #{id}
+	</delete>
+
+	<delete id="deleteByUsername">
+		DELETE FROM admin WHERE username = #{username}
+	</delete>
+
+	<select id="selectByEmail" resultMap="baseResultMap">
+		SELECT <include refid="base_column_list"/> FROM admin WHERE email = #{email}
+	</select>
+
+</mapper>

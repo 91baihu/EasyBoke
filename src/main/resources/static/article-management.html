@@ -1,0 +1,1306 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文章管理 - Easy博客后台管理系统</title>
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB',
+                'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background: #F5F6F7;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #12B7F5 0%, #0099FF 100%);
+            color: white;
+            padding: 20px 40px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: white;
+            color: #12B7F5;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255,255,255,0.3);
+        }
+
+        .btn-success {
+            background: #67C23A;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #5daf34;
+        }
+
+        .btn-danger {
+            background: #F56C6C;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #e85555;
+        }
+
+        .btn-warning {
+            background: #FF9500;
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background: #e68600;
+        }
+
+        .btn-secondary {
+            background: #909399;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #7d7f85;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .toolbar {
+            background: #FFFFFF;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            flex: 1;
+        }
+
+        .search-box input,
+        .search-box select {
+            padding: 8px 12px;
+            border: 1px solid #dcdfe6;
+            border-radius: 6px;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.3s ease;
+            color: #333333;
+        }
+
+        .search-box input:focus,
+        .search-box select:focus {
+            border-color: #12B7F5;
+            box-shadow: 0 0 0 2px rgba(18, 183, 245, 0.15);
+        }
+
+        .search-box input {
+            min-width: 200px;
+        }
+
+        .table-container {
+            background: #FFFFFF;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: #F5F6F7;
+        }
+
+        th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            color: #1A1A2E;
+            font-size: 14px;
+            border-bottom: 2px solid #e4e7ed;
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #ebeef5;
+            font-size: 14px;
+            color: #333333;
+        }
+
+        tbody tr:hover {
+            background: #F5F7FA;
+        }
+
+        .article-title {
+            color: #12B7F5;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .article-title:hover {
+            text-decoration: underline;
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-draft {
+            background: #fdf6ec;
+            color: #FF9500;
+        }
+
+        .status-published {
+            background: #f0f9ff;
+            color: #67C23A;
+        }
+
+        .status-deleted {
+            background: #fef0f0;
+            color: #F56C6C;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            gap: 10px;
+        }
+
+        .pagination button {
+            padding: 8px 16px;
+            border: 1px solid #dcdfe6;
+            background: #FFFFFF;
+            border-radius: 6px;
+            cursor: pointer;
+            color: #333333;
+            transition: all 0.3s ease;
+        }
+
+        .pagination button:hover:not(:disabled) {
+            border-color: #12B7F5;
+            color: #12B7F5;
+        }
+
+        .pagination button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .pagination span {
+            color: #555555;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #FFFFFF;
+            border-radius: 12px;
+            width: 95%;
+            max-width: 1100px;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        /* Quill 编辑器样式 */
+        .editor-toolbar-row {
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;
+        }
+        .editor-toolbar-row label {
+            color: #1A1A2E;
+            font-weight: 500;
+            font-size: 14px;
+        }
+        .editor-mode-btn {
+            padding: 4px 12px; border: 1px solid #dcdfe6; border-radius: 6px;
+            background: #fff; cursor: pointer; font-size: 12px; color: #555555;
+        }
+        .editor-mode-btn.active { background: #12B7F5; color: #fff; border-color: #12B7F5; }
+        #editor-container { height: 350px; border: 1px solid #dcdfe6; border-radius: 0 0 6px 6px; }
+        #editor-container:focus-within { border-color: #12B7F5; }
+        .ql-toolbar.ql-snow { border-radius: 6px 6px 0 0; border-color: #dcdfe6; }
+        .ql-container.ql-snow { border-color: #dcdfe6; font-size: 14px; font-family: inherit; }
+        #markdownEditor { width: 100%; min-height: 400px; font-family: monospace; font-size: 14px; color: #333333; }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #ebeef5;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            font-size: 20px;
+            color: #1A1A2E;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #888888;
+            transition: color 0.3s ease;
+        }
+
+        .close-btn:hover {
+            color: #333333;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #1A1A2E;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .form-group label .required {
+            color: #F56C6C;
+            margin-left: 4px;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #dcdfe6;
+            border-radius: 6px;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            color: #333333;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            border-color: #12B7F5;
+            box-shadow: 0 0 0 2px rgba(18, 183, 245, 0.15);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 200px;
+        }
+
+        .tag-selector {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .tag-item {
+            padding: 6px 12px;
+            background: #F5F6F7;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 13px;
+            color: #555555;
+        }
+
+        .tag-item:hover {
+            background: #e5e7eb;
+        }
+
+        .tag-item.selected {
+            background: #12B7F5;
+            color: white;
+        }
+
+        .modal-footer {
+            padding: 20px;
+            border-top: 1px solid #ebeef5;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255,255,255,0.8);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .loading-overlay.active {
+            display: flex;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #12B7F5;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .message {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 12px 24px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            z-index: 3000;
+            animation: slideDown 0.3s ease-out;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .message.success {
+            background: #67C23A;
+        }
+
+        .message.error {
+            background: #F56C6C;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #888888;
+        }
+
+        .stats-bar {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: #FFFFFF;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .stat-icon.blue {
+            background: #e3f2fd;
+            color: #2196f3;
+        }
+
+        .stat-icon.green {
+            background: #e8f5e9;
+            color: #4caf50;
+        }
+
+        .stat-icon.orange {
+            background: #fff3e0;
+            color: #ff9800;
+        }
+
+        .stat-info h3 {
+            font-size: 24px;
+            color: #1A1A2E;
+            margin-bottom: 5px;
+        }
+
+        .stat-info p {
+            font-size: 14px;
+            color: #888888;
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                padding: 15px 20px;
+            }
+
+            .header h1 {
+                font-size: 20px;
+            }
+
+            .container {
+                padding: 0 10px;
+            }
+
+            .toolbar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search-box {
+                flex-direction: column;
+            }
+
+            .search-box input,
+            .search-box select {
+                width: 100%;
+            }
+
+            table {
+                font-size: 12px;
+            }
+
+            th, td {
+                padding: 10px 8px;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .stats-bar {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="header">
+    <h1> 文章管理</h1>
+    <div class="header-actions">
+        <a href="/admin-dashboard.html" class="btn btn-primary" style="background: #fff; color: #12B7F5;">
+            <span>🏠 返回导航</span>
+        </a>
+        <a href="/comment-management.html" class="btn btn-primary" style="background: #fff; color: #12B7F5;">
+            <span>💬 评论管理</span>
+        </a>
+        <a href="/statistics.html" class="btn btn-primary" style="background: #fff; color: #12B7F5;">
+            <span>📊 访问统计</span>
+        </a>
+        <button class="btn btn-primary" onclick="openAddModal()">
+            <span>➕ 新增文章</span>
+        </button>
+        <button class="btn btn-secondary" onclick="logout()">退出登录</button>
+    </div>
+</div>
+
+
+
+<div class="container">
+    <div class="stats-bar">
+        <div class="stat-card">
+            <div class="stat-icon blue">📊</div>
+            <div class="stat-info">
+                <h3 id="totalCount">0</h3>
+                <p>总文章数</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon green">✅</div>
+            <div class="stat-info">
+                <h3 id="publishedCount">0</h3>
+                <p>已发布</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon orange">📝</div>
+            <div class="stat-info">
+                <h3 id="draftCount">0</h3>
+                <p>草稿箱</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="toolbar">
+        <div class="search-box">
+            <input type="text" id="searchKeyword" placeholder="搜索文章标题...">
+            <select id="filterCategory">
+                <option value="">全部分类</option>
+            </select>
+            <select id="filterStatus">
+                <option value="">全部状态</option>
+                <option value="0">草稿</option>
+                <option value="1">已发布</option>
+                <option value="2">已删除</option>
+            </select>
+            <button class="btn btn-success" onclick="searchArticles()">🔍 搜索</button>
+            <button class="btn btn-secondary" onclick="resetSearch()">重置</button>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <table>
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>标题</th>
+                <th>分类</th>
+                <th>状态</th>
+                <th>浏览量</th>
+                <th>点赞数</th>
+                <th>评论数</th>
+                <th>发布时间</th>
+                <th>操作</th>
+            </tr>
+            </thead>
+            <tbody id="articleTableBody">
+            <tr>
+                <td colspan="9" class="empty-state">加载中...</td>
+            </tr>
+            </tbody>
+        </table>
+        <div class="pagination" id="pagination"></div>
+    </div>
+</div>
+
+<div class="modal" id="articleModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="modalTitle">新增文章</h2>
+            <button class="close-btn" onclick="closeModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="articleForm">
+                <input type="hidden" id="articleId">
+
+                <div class="form-group">
+                    <label>文章标题 <span class="required">*</span></label>
+                    <input type="text" id="title" required placeholder="请输入文章标题">
+                </div>
+
+                <div class="form-group">
+                    <label>文章摘要</label>
+                    <textarea id="summary" rows="3" placeholder="请输入文章摘要"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <div class="editor-toolbar-row">
+                        <label>文章内容 <span class="required">*</span></label>
+                        <div>
+                            <button type="button" class="editor-mode-btn active" id="richTextModeBtn" onclick="switchEditorMode('richtext')">📝 富文本</button>
+                            <button type="button" class="editor-mode-btn" id="markdownModeBtn" onclick="switchEditorMode('markdown')">📄 Markdown</button>
+                        </div>
+                    </div>
+                    <div id="editor-container"></div>
+                    <textarea id="markdownEditor" style="display:none;" placeholder="请输入Markdown内容..."></textarea>
+                    <textarea id="content" style="display:none;"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>封面图片URL</label>
+                    <input type="text" id="coverImage" placeholder="https://example.com/cover.jpg">
+                </div>
+
+                <div class="form-group">
+                    <label>文章分类 <span class="required">*</span></label>
+                    <select id="categoryId" required>
+                        <option value="">请选择分类</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>文章标签</label>
+                    <div class="tag-selector" id="tagSelector"></div>
+                </div>
+
+                <div class="form-group">
+                    <label>状态</label>
+                    <select id="status">
+                        <option value="0">草稿</option>
+                        <option value="1" selected>已发布</option>
+                        <option value="2">已删除</option>
+                    </select>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal()">取消</button>
+            <button class="btn btn-success" onclick="saveArticle()">保存</button>
+        </div>
+    </div>
+</div>
+
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="spinner"></div>
+</div>
+
+<script>
+    let currentPage = 1;
+    let pageSize = 10;
+    let totalRecords = 0;
+    let categories = [];
+    let tags = [];
+    let selectedTags = [];
+    let quill = null;
+    let currentEditorMode = 'richtext'; // 'richtext' | 'markdown'
+
+    document.addEventListener('DOMContentLoaded', function() {
+        checkLogin();
+        loadCategories();
+        loadTags();
+        loadArticles();
+    });
+
+    // 初始化Quill富文本编辑器
+    function initQuill() {
+        if (quill) {
+            quill = null;
+        }
+        var container = document.getElementById('editor-container');
+        container.innerHTML = '';
+        quill = new Quill('#editor-container', {
+            theme: 'snow',
+            placeholder: '请输入文章内容...',
+            modules: {
+                toolbar: [
+                    [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+                    ['bold', 'italic', 'underline', 'strike'],
+                    [{ 'color': [] }, { 'background': [] }],
+                    [{ 'align': [] }],
+                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                    [{ 'indent': '-1'}, { 'indent': '+1' }],
+                    ['blockquote', 'code-block'],
+                    ['link', 'image', 'video'],
+                    [{ 'font': [] }],
+                    [{ 'size': ['small', false, 'large', 'huge'] }],
+                    ['clean']
+                ]
+            }
+        });
+    }
+
+    // 切换编辑器模式
+    function switchEditorMode(mode) {
+        currentEditorMode = mode;
+        var richtextBtn = document.getElementById('richTextModeBtn');
+        var markdownBtn = document.getElementById('markdownModeBtn');
+        var editorContainer = document.getElementById('editor-container');
+        var markdownEditor = document.getElementById('markdownEditor');
+        var contentHidden = document.getElementById('content');
+
+        if (mode === 'richtext') {
+            richtextBtn.classList.add('active');
+            markdownBtn.classList.remove('active');
+            editorContainer.style.display = '';
+            markdownEditor.style.display = 'none';
+            if (!quill) { initQuill(); }
+            // 如果markdown有内容，转换到富文本
+            if (markdownEditor.value.trim()) {
+                quill.setText(markdownEditor.value);
+            }
+        } else {
+            markdownBtn.classList.add('active');
+            richtextBtn.classList.remove('active');
+            editorContainer.style.display = 'none';
+            markdownEditor.style.display = '';
+            // 把富文本内容转为纯文本放到markdown
+            if (quill) {
+                markdownEditor.value = quill.getText();
+            }
+        }
+    }
+
+    // 获取编辑器内容（HTML格式）
+    function getEditorContent() {
+        if (currentEditorMode === 'markdown') {
+            return document.getElementById('markdownEditor').value;
+        }
+        return quill ? quill.root.innerHTML : '';
+    }
+
+    // 设置编辑器内容
+    function setEditorContent(htmlContent) {
+        if (currentEditorMode === 'markdown') {
+            document.getElementById('markdownEditor').value = htmlContent || '';
+        } else {
+            if (!quill) initQuill();
+            if (htmlContent) {
+                // 判断是否为HTML
+                if (htmlContent.indexOf('<') >= 0) {
+                    quill.root.innerHTML = htmlContent;
+                } else {
+                    quill.setText(htmlContent || '');
+                }
+            }
+        }
+    }
+
+    async function checkLogin() {
+        try {
+            const response = await fetch('/admin/currentAdmin');
+            const result = await response.json();
+
+            if (!result || result.status !== 'success' || !result.data) {
+                window.location.href = '/admin-login.html';
+            }
+        } catch (error) {
+            console.error('检查登录状态失败:', error);
+            window.location.href = '/admin-login.html';
+        }
+    }
+
+    async function loadCategories() {
+        try {
+            const response = await fetch('/category/loadDataList?pageNo=1&pageSize=100');
+            const result = await response.json();
+
+            if (result && result.status === 'success') {
+                categories = result.data.list || [];
+                populateCategorySelect();
+            }
+        } catch (error) {
+            console.error('加载分类失败:', error);
+        }
+    }
+
+    async function loadTags() {
+        try {
+            const response = await fetch('/tag/loadDataList?pageNo=1&pageSize=100');
+            const result = await response.json();
+
+            if (result && result.status === 'success') {
+                tags = result.data.list || [];
+                renderTagSelector();
+            }
+        } catch (error) {
+            console.error('加载标签失败:', error);
+        }
+    }
+
+    function populateCategorySelect() {
+        const filterSelect = document.getElementById('filterCategory');
+        const formSelect = document.getElementById('categoryId');
+
+        categories.forEach(category => {
+            const option1 = new Option(category.categoryName, category.id);
+            const option2 = new Option(category.categoryName, category.id);
+            filterSelect.add(option1);
+            formSelect.add(option2);
+        });
+    }
+
+    function renderTagSelector() {
+        const container = document.getElementById('tagSelector');
+        container.innerHTML = '';
+
+        tags.forEach(tag => {
+            const tagElement = document.createElement('div');
+            tagElement.className = 'tag-item';
+            tagElement.textContent = tag.tagName;
+            tagElement.dataset.tagId = tag.id;
+            tagElement.onclick = () => toggleTag(tag.id);
+            container.appendChild(tagElement);
+        });
+    }
+
+    function toggleTag(tagId) {
+        const index = selectedTags.indexOf(tagId);
+        if (index > -1) {
+            selectedTags.splice(index, 1);
+        } else {
+            selectedTags.push(tagId);
+        }
+        updateTagDisplay();
+    }
+
+    function updateTagDisplay() {
+        const tagElements = document.querySelectorAll('.tag-item');
+        tagElements.forEach(element => {
+            const tagId = parseInt(element.dataset.tagId);
+            if (selectedTags.includes(tagId)) {
+                element.classList.add('selected');
+            } else {
+                element.classList.remove('selected');
+            }
+        });
+    }
+
+    async function loadArticles() {
+        showLoading();
+
+        try {
+            const keyword = document.getElementById('searchKeyword').value;
+            const categoryId = document.getElementById('filterCategory').value;
+            const status = document.getElementById('filterStatus').value;
+
+            let url = `/article/loadDataList?pageNo=${currentPage}&pageSize=${pageSize}`;
+
+            if (keyword) {
+                url += `&titleFuzzy=${encodeURIComponent(keyword)}`;
+            }
+            if (categoryId) {
+                url += `&categoryId=${categoryId}`;
+            }
+            if (status !== '') {
+                url += `&status=${status}`;
+            }
+
+            const response = await fetch(url);
+            const result = await response.json();
+
+            if (result && result.status === 'success') {
+                const data = result.data;
+                totalRecords = data.totalCount || 0;
+                renderTable(data.list || []);
+                renderPagination();
+                updateStats();
+            } else {
+                showMessage('加载文章列表失败', 'error');
+            }
+        } catch (error) {
+            console.error('加载文章列表失败:', error);
+            showMessage('网络错误，请稍后重试', 'error');
+        } finally {
+            hideLoading();
+        }
+    }
+
+    function renderTable(articles) {
+        const tbody = document.getElementById('articleTableBody');
+
+        if (!articles || articles.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="9" class="empty-state">暂无数据</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = articles.map(article => {
+            const category = categories.find(c => c.id === article.categoryId);
+            const categoryName = category ? category.categoryName : '-';
+
+            const statusMap = {
+                0: { text: '草稿', class: 'status-draft' },
+                1: { text: '已发布', class: 'status-published' },
+                2: { text: '已删除', class: 'status-deleted' }
+            };
+
+            const status = statusMap[article.status] || statusMap[0];
+
+            const publishTime = article.publishTime ? formatDate(article.publishTime) : '-';
+
+            return `
+                <tr>
+                    <td>${article.id}</td>
+                    <td><span class="article-title" onclick="viewArticle(${article.id})">${escapeHtml(article.title)}</span></td>
+                    <td>${escapeHtml(categoryName)}</td>
+                    <td><span class="status-badge ${status.class}">${status.text}</span></td>
+                    <td>${article.viewCount || 0}</td>
+                    <td>${article.likeCount || 0}</td>
+                    <td>${article.commentCount || 0}</td>
+                    <td>${publishTime}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn btn-warning btn-small" onclick="editArticle(${article.id})">编辑</button>
+                            <button class="btn btn-danger btn-small" onclick="deleteArticle(${article.id})">删除</button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    function renderPagination() {
+        const pagination = document.getElementById('pagination');
+        const totalPages = Math.ceil(totalRecords / pageSize);
+
+        if (totalPages <= 1) {
+            pagination.innerHTML = '';
+            return;
+        }
+
+        let html = `
+            <button onclick="changePage(1)" ${currentPage === 1 ? 'disabled' : ''}>首页</button>
+            <button onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>上一页</button>
+            <span>第 ${currentPage} / ${totalPages} 页，共 ${totalRecords} 条</span>
+            <button onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>下一页</button>
+            <button onclick="changePage(${totalPages})" ${currentPage === totalPages ? 'disabled' : ''}>末页</button>
+        `;
+
+        pagination.innerHTML = html;
+    }
+
+    function changePage(page) {
+        currentPage = page;
+        loadArticles();
+    }
+
+    function updateStats() {
+        document.getElementById('totalCount').textContent = totalRecords;
+
+        fetch(`/article/loadDataList?pageNo=1&pageSize=1&status=1`)
+            .then(res => res.json())
+            .then(result => {
+                if (result && result.status === 'success') {
+                    document.getElementById('publishedCount').textContent = result.data.totalCount || 0;
+                }
+            });
+
+        fetch(`/article/loadDataList?pageNo=1&pageSize=1&status=0`)
+            .then(res => res.json())
+            .then(result => {
+                if (result && result.status === 'success') {
+                    document.getElementById('draftCount').textContent = result.data.totalCount || 0;
+                }
+            });
+    }
+
+    function searchArticles() {
+        currentPage = 1;
+        loadArticles();
+    }
+
+    function resetSearch() {
+        document.getElementById('searchKeyword').value = '';
+        document.getElementById('filterCategory').value = '';
+        document.getElementById('filterStatus').value = '';
+        currentPage = 1;
+        loadArticles();
+    }
+
+    function openAddModal() {
+        document.getElementById('modalTitle').textContent = '新增文章';
+        document.getElementById('articleForm').reset();
+        document.getElementById('articleId').value = '';
+        selectedTags = [];
+        updateTagDisplay();
+        // 切换到富文本模式
+        currentEditorMode = 'richtext';
+        document.getElementById('richTextModeBtn').classList.add('active');
+        document.getElementById('markdownModeBtn').classList.remove('active');
+        document.getElementById('editor-container').style.display = '';
+        document.getElementById('markdownEditor').style.display = 'none';
+        document.getElementById('markdownEditor').value = '';
+        document.getElementById('articleModal').classList.add('active');
+        // 延迟初始化Quill（等DOM渲染完成）
+        setTimeout(function() { initQuill(); }, 100);
+    }
+
+    async function editArticle(id) {
+        showLoading();
+
+        try {
+            const response = await fetch(`/article/getArticleById?id=${id}`);
+            const result = await response.json();
+
+            if (result && result.status === 'success') {
+                const article = result.data;
+
+                document.getElementById('modalTitle').textContent = '编辑文章';
+                document.getElementById('articleId').value = article.id;
+                document.getElementById('title').value = article.title;
+                document.getElementById('summary').value = article.summary || '';
+                document.getElementById('coverImage').value = article.coverImage || '';
+                document.getElementById('categoryId').value = article.categoryId;
+                document.getElementById('status').value = article.status;
+
+                // 切换到富文本模式并设置内容
+                currentEditorMode = 'richtext';
+                document.getElementById('richTextModeBtn').classList.add('active');
+                document.getElementById('markdownModeBtn').classList.remove('active');
+                document.getElementById('editor-container').style.display = '';
+                document.getElementById('markdownEditor').style.display = 'none';
+                document.getElementById('markdownEditor').value = '';
+
+                setTimeout(function() {
+                    initQuill();
+                    if (article.content) {
+                        if (article.content.indexOf('<') >= 0) {
+                            quill.root.innerHTML = article.content;
+                        } else {
+                            quill.setText(article.content || '');
+                        }
+                    }
+                }, 100);
+
+                selectedTags = [];
+                updateTagDisplay();
+
+                document.getElementById('articleModal').classList.add('active');
+            } else {
+                showMessage('获取文章详情失败', 'error');
+            }
+        } catch (error) {
+            console.error('获取文章详情失败:', error);
+            showMessage('网络错误，请稍后重试', 'error');
+        } finally {
+            hideLoading();
+        }
+    }
+
+    async function saveArticle() {
+        const title = document.getElementById('title').value.trim();
+        const content = getEditorContent().trim();
+        const categoryId = document.getElementById('categoryId').value;
+
+        if (!title || !content || !categoryId) {
+            showMessage('请填写必填项', 'error');
+            return;
+        }
+
+        showLoading();
+
+        try {
+            const articleId = document.getElementById('articleId').value;
+            const article = {
+                title: title,
+                summary: document.getElementById('summary').value.trim(),
+                content: content,
+                coverImage: document.getElementById('coverImage').value.trim(),
+                categoryId: parseInt(categoryId),
+                status: parseInt(document.getElementById('status').value)
+            };
+
+            let url, method;
+            if (articleId) {
+                url = '/article/update';
+                article.id = parseInt(articleId);
+                method = 'POST';
+            } else {
+                url = '/article/publish';
+                method = 'POST';
+            }
+
+            const params = new URLSearchParams();
+            Object.keys(article).forEach(key => {
+                if (article[key] !== null && article[key] !== undefined) {
+                    params.append(key, article[key]);
+                }
+            });
+
+            selectedTags.forEach(tagId => {
+                params.append('tagIds', tagId);
+            });
+
+            const response = await fetch(url, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: params.toString()
+            });
+
+            const result = await response.json();
+
+            if (result && result.status === 'success') {
+                showMessage(articleId ? '更新成功' : '发布成功', 'success');
+                closeModal();
+                loadArticles();
+            } else {
+                showMessage(result.info || '操作失败', 'error');
+            }
+        } catch (error) {
+            console.error('保存文章失败:', error);
+            showMessage('网络错误，请稍后重试', 'error');
+        } finally {
+            hideLoading();
+        }
+    }
+
+    async function deleteArticle(id) {
+        if (!confirm('确定要删除这篇文章吗？')) {
+            return;
+        }
+
+        showLoading();
+
+        try {
+            const response = await fetch(`/article/deleteArticleById?id=${id}`);
+            const result = await response.json();
+
+            if (result && result.status === 'success') {
+                showMessage('删除成功', 'success');
+                loadArticles();
+            } else {
+                showMessage(result.info || '删除失败', 'error');
+            }
+        } catch (error) {
+            console.error('删除文章失败:', error);
+            showMessage('网络错误，请稍后重试', 'error');
+        } finally {
+            hideLoading();
+        }
+    }
+
+    function viewArticle(id) {
+        window.open(`/article/detail?id=${id}`, '_blank');
+    }
+
+    function closeModal() {
+        document.getElementById('articleModal').classList.remove('active');
+    }
+
+    function logout() {
+        if (confirm('确定要退出登录吗？')) {
+            fetch('/admin/logout', { method: 'POST' })
+                .then(() => {
+                    window.location.href = '/admin-login.html';
+                });
+        }
+    }
+
+    function showLoading() {
+        document.getElementById('loadingOverlay').classList.add('active');
+    }
+
+    function hideLoading() {
+        document.getElementById('loadingOverlay').classList.remove('active');
+    }
+
+    function showMessage(message, type) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${type}`;
+        messageDiv.textContent = message;
+        document.body.appendChild(messageDiv);
+
+        setTimeout(() => {
+            messageDiv.remove();
+        }, 3000);
+    }
+
+    function formatDate(dateStr) {
+        if (!dateStr) return '-';
+        const date = new Date(dateStr);
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        const seconds = String(date.getSeconds()).padStart(2, '0');
+        return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    document.getElementById('articleModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeModal();
+        }
+    });
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeModal();
+        }
+    });
+</script>
+</body>
+</html>

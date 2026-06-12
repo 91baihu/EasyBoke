@@ -1,0 +1,471 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.easyboke.mappers.UserMapper">
+    <!--实体映射-->
+    <resultMap id="base_result_map" type="com.easyboke.entity.po.User">
+        <!--用户ID-->
+        <id column="id" property="id"/>
+        <!--用户名-->
+        <result column="username" property="username"/>
+        <!--账号-->
+        <result column="account" property="account"/>
+        <!--密码-->
+        <result column="password" property="password"/>
+        <!--邮箱-->
+        <result column="email" property="email"/>
+        <!--性别：0-未知，1-男，2-女-->
+        <result column="gender" property="gender"/>
+        <!--年龄-->
+        <result column="age" property="age"/>
+        <!--生日-->
+        <result column="birthday" property="birthday"/>
+        <!--头像URL-->
+        <result column="avatar" property="avatar"/> 
+        <!--状态：0-禁用，1-启用-->
+        <result column="status" property="status"/>
+        <!--创建时间-->
+        <result column="create_time" property="createTime"/>
+        <!--更新时间-->
+        <result column="update_time" property="updateTime"/>
+   </resultMap>
+    <!--通用查询结果列-->
+<sql id="base_column_list">
+	id,username,account,password,email,gender,age,birthday,avatar,status,create_time,update_time
+    </sql>
+
+    <!--基础查询条件-->
+    <sql id="base_query_condition">
+		<if test="query.id!=null">
+			and id=#{query.id} 
+		</if>
+		<if test="query.username!=null and query.username!=''">
+			and username=#{query.username} 
+		</if>
+		<if test="query.account!=null and query.account!=''">
+			and account=#{query.account} 
+		</if>
+		<if test="query.password!=null and query.password!=''">
+			and password=#{query.password} 
+		</if>
+		<if test="query.gender!=null">
+			and gender=#{query.gender} 
+		</if>
+		<if test="query.age!=null">
+			and age=#{query.age} 
+		</if>
+		<if test="query.status!=null">
+			and status=#{query.status} 
+		</if>
+		<if test="query.createTime!=null">
+			and create_time=#{query.createTime} 
+		</if>
+		<if test="query.updateTime!=null">
+			and update_time=#{query.updateTime} 
+		</if>
+    </sql>
+    <!--扩展查询条件-->
+    <sql id="base_query_condition_extend">
+		<if test="query.usernameFuzzy!=null and query.usernameFuzzy!=''">
+			and username like concat('%',#{query.usernameFuzzy},'%')
+		</if>
+		<if test="query.accountFuzzy!=null and query.accountFuzzy!=''">
+			and account like concat('%',#{query.accountFuzzy},'%')
+		</if>
+		<if test="query.passwordFuzzy!=null and query.passwordFuzzy!=''">
+			and password like concat('%',#{query.passwordFuzzy},'%')
+		</if>
+		<if test="query.createTimeStart!=null and query.createTimeStart!=''">
+			<![CDATA[ and  create_time >= str_to_date(#{query.createTimeStart},'%Y-%m-%d') ]]>
+		</if>
+		<if test="query.createTimeEnd!=null and query.createTimeEnd!=''">
+			<![CDATA[ and  create_time < date_sub(str_to_date(#{query.createTimeEnd},'%Y-%m-%d'),interval -1 day) ]]>
+		</if>
+		<if test="query.updateTimeStart!=null and query.updateTimeStart!=''">
+			<![CDATA[ and  update_time >= str_to_date(#{query.updateTimeStart},'%Y-%m-%d') ]]>
+		</if>
+		<if test="query.updateTimeEnd!=null and query.updateTimeEnd!=''">
+			<![CDATA[ and  update_time < date_sub(str_to_date(#{query.updateTimeEnd},'%Y-%m-%d'),interval -1 day) ]]>
+		</if>
+    </sql>
+    <!--通用查询条件-->
+    <sql id="query_condition">
+		<where>
+			<include refid="base_query_condition"/>
+			<include refid="base_query_condition_extend"/>
+		</where>
+    </sql>
+    <!--查询列表-->
+	<select id="selectList" resultMap="base_result_map">
+		SELECT <include refid="base_column_list"/> FROM user <include refid="query_condition"/>
+		<if test="query.orderBy!=null"> order by ${query.orderBy}</if>
+		<if test="query.simplePage!=null">limit #{query.simplePage.start},#{query.simplePage.end}</if>
+	</select>
+  <!--查询数量-->
+	<select id="selectCount"  resultType="java.lang.Integer">
+		SELECT count(1) FROM user <include refid="query_condition"/>
+	</select>
+    <!--插入(匹配有值的字段)-->
+	<insert id="insert"  parameterType="com.easyboke.entity.po.User">
+		<selectKey keyProperty="bean.id" resultType="Integer" order="AFTER">
+			SELECT LAST_INSERT_ID();
+		</selectKey>
+		insert into user
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="bean.id!=null">
+				id,
+			</if>
+			<if test="bean.username!=null">
+				username,
+			</if>
+			<if test="bean.account!=null">
+				account,
+			</if>
+			<if test="bean.password!=null">
+				password,
+			</if>
+			<if test="bean.email!=null">
+				email,
+			</if>
+			<if test="bean.gender!=null">
+				gender,
+			</if>
+			<if test="bean.age!=null">
+				age,
+			</if>
+			<if test="bean.avatar!=null">
+				avatar,
+			</if>
+			<if test="bean.status!=null">
+				status,
+			</if>
+			<if test="bean.createTime!=null">
+				create_time,
+			</if>
+			<if test="bean.updateTime!=null">
+				update_time,
+			</if>
+		</trim>
+		<trim prefix="values(" suffix=")" suffixOverrides=",">
+ 			<if test="bean.id!=null">
+ 				#{bean.id},
+			 </if>
+ 			<if test="bean.username!=null">
+ 				#{bean.username},
+			 </if>
+ 			<if test="bean.account!=null">
+ 				#{bean.account},
+			 </if>
+ 			<if test="bean.password!=null">
+ 				#{bean.password},
+			 </if>
+ 			<if test="bean.email!=null">
+ 				#{bean.email},
+			 </if>
+ 			<if test="bean.gender!=null">
+ 				#{bean.gender},
+			 </if>
+ 			<if test="bean.age!=null">
+ 				#{bean.age},
+			 </if>
+ 			<if test="bean.avatar!=null">
+ 				#{bean.avatar},
+			 </if>
+ 			<if test="bean.status!=null">
+ 				#{bean.status},
+			 </if>
+ 			<if test="bean.createTime!=null">
+ 				#{bean.createTime},
+			 </if>
+ 			<if test="bean.updateTime!=null">
+ 				#{bean.updateTime},
+			 </if>
+		 </trim>
+	</insert>
+    <!--插入或者更新(匹配有值的字段)-->
+	<insert id="insertOrUpdate"  parameterType="com.easyboke.entity.po.User">
+		insert into user
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="bean.id!=null">
+				id,
+			</if>
+			<if test="bean.username!=null">
+				username,
+			</if>
+			<if test="bean.account!=null">
+				account,
+			</if>
+			<if test="bean.password!=null">
+				password,
+			</if>
+			<if test="bean.email!=null">
+				email,
+			</if>
+			<if test="bean.gender!=null">
+				gender,
+			</if>
+			<if test="bean.age!=null">
+				age,
+			</if>
+			<if test="bean.avatar!=null">
+				avatar,
+			</if>
+			<if test="bean.status!=null">
+				status,
+			</if>
+			<if test="bean.createTime!=null">
+				create_time,
+			</if>
+			<if test="bean.updateTime!=null">
+				update_time,
+			</if>
+		</trim>
+		<trim prefix="values(" suffix=")" suffixOverrides=",">
+ 			<if test="bean.id!=null">
+ 				#{bean.id},
+			 </if>
+ 			<if test="bean.username!=null">
+ 				#{bean.username},
+			 </if>
+ 			<if test="bean.account!=null">
+ 				#{bean.account},
+			 </if>
+ 			<if test="bean.password!=null">
+ 				#{bean.password},
+			 </if>
+ 			<if test="bean.email!=null">
+ 				#{bean.email},
+			 </if>
+ 			<if test="bean.gender!=null">
+ 				#{bean.gender},
+			 </if>
+ 			<if test="bean.age!=null">
+ 				#{bean.age},
+			 </if>
+ 			<if test="bean.avatar!=null">
+ 				#{bean.avatar},
+			 </if>
+ 			<if test="bean.status!=null">
+ 				#{bean.status},
+			 </if>
+ 			<if test="bean.createTime!=null">
+ 				#{bean.createTime},
+			 </if>
+ 			<if test="bean.updateTime!=null">
+ 				#{bean.updateTime},
+			 </if>
+		 </trim>
+		on DUPLICATE key update
+		<trim prefix="" suffix="" suffixOverrides=",">
+			<if test="bean.password!=null">
+				password =VALUES(password),
+			</if>
+			<if test="bean.gender!=null">
+				gender =VALUES(gender),
+			</if>
+			<if test="bean.age!=null">
+				age =VALUES(age),
+			</if>
+			<if test="bean.avatar!=null">
+				avatar =VALUES(avatar),
+			</if>
+			<if test="bean.status!=null">
+				status =VALUES(status),
+			</if>
+			<if test="bean.createTime!=null">
+				create_time =VALUES(create_time),
+			</if>
+			<if test="bean.updateTime!=null">
+				update_time =VALUES(update_time),
+			</if>
+
+		</trim>
+	</insert>
+	<!--添加(批量插入)-->
+	<insert id="insertBatch" parameterType="com.easyboke.entity.po.User">
+		insert into user(username,account,password,email,gender,age,birthday,avatar,status,create_time,update_time)values
+		<foreach collection="list" item="item" separator=",">
+			(#{item.username},#{item.account},#{item.password},#{item.email},#{item.gender},#{item.age},#{item.birthday},#{item.avatar},#{item.status},#{item.createTime},#{item.updateTime})
+		</foreach>
+	 </insert>
+	<!--批量插入或更新-->
+	<insert id="insertOrUpdateBatch" parameterType="com.easyboke.entity.po.User">
+		insert into user(username,account,password,email,gender,age,birthday,avatar,status,create_time,update_time)values
+		<foreach collection="list" item="item" separator=",">
+			(#{item.username},#{item.account},#{item.password},#{item.email},#{item.gender},#{item.age},#{item.birthday},#{item.avatar},#{item.status},#{item.createTime},#{item.updateTime})
+		</foreach>
+			on DUPLICATE key update
+            id= VALUES(id),username= VALUES(username),account= VALUES(account),password= VALUES(password),email= VALUES(email),gender= VALUES(gender),age= VALUES(age),avatar= VALUES(avatar),status= VALUES(status),create_time= VALUES(create_time),update_time= VALUES(update_time)
+	</insert>
+	<!-- 根据"Id"查询-->
+	<select id="selectById" resultMap="base_result_map">
+		select <include refid="base_column_list"/>  from user where id=#{id}
+	</select>
+	<!-- 根据"Id"更新-->
+	<update id="updateById" parameterType="com.easyboke.entity.po.User">
+		update  user
+		<set>
+			<if test="bean.id!=null">
+			id=#{bean.id},
+			</if>
+			<if test="bean.username!=null">
+			username=#{bean.username},
+			</if>
+			<if test="bean.account!=null">
+			account=#{bean.account},
+			</if>
+			<if test="bean.password!=null">
+			password=#{bean.password},
+			</if>
+			<if test="bean.email!=null">
+			email=#{bean.email},
+			</if>
+			<if test="bean.gender!=null">
+			gender=#{bean.gender},
+			</if>
+			<if test="bean.age!=null">
+			age=#{bean.age},
+			</if>
+			<if test="bean.avatar!=null">
+			avatar=#{bean.avatar},
+			</if>
+			<if test="bean.status!=null">
+			status=#{bean.status},
+			</if>
+			<if test="bean.createTime!=null">
+			create_time=#{bean.createTime},
+			</if>
+			<if test="bean.updateTime!=null">
+			update_time=#{bean.updateTime},
+			</if>
+		</set>
+		<where>
+			id=#{id}
+		</where>
+	</update>
+
+	<!-- 根据"Id"删除-->
+	<delete id="deleteById">
+		delete from user where id=#{id}
+	</delete>
+
+	<!-- 根据"Username"查询-->
+	<select id="selectByUsername" resultMap="base_result_map">
+		select <include refid="base_column_list"/>  from user where username=#{username}
+	</select>
+	<!-- 根据"Username"更新-->
+	<update id="updateByUsername" parameterType="com.easyboke.entity.po.User">
+		update  user
+		<set>
+			<if test="bean.id!=null">
+			id=#{bean.id},
+			</if>
+			<if test="bean.username!=null">
+			username=#{bean.username},
+			</if>
+			<if test="bean.account!=null">
+			account=#{bean.account},
+			</if>
+			<if test="bean.password!=null">
+			password=#{bean.password},
+			</if>
+			<if test="bean.email!=null">
+			email=#{bean.email},
+			</if>
+			<if test="bean.gender!=null">
+			gender=#{bean.gender},
+			</if>
+			<if test="bean.age!=null">
+			age=#{bean.age},
+			</if>
+			<if test="bean.avatar!=null">
+			avatar=#{bean.avatar},
+			</if>
+			<if test="bean.status!=null">
+			status=#{bean.status},
+			</if>
+			<if test="bean.createTime!=null">
+			create_time=#{bean.createTime},
+			</if>
+			<if test="bean.updateTime!=null">
+			update_time=#{bean.updateTime},
+			</if>
+		</set>
+		<where>
+			username=#{username}
+		</where>
+	</update>
+
+	<!-- 根据"Username"删除-->
+	<delete id="deleteByUsername">
+		delete from user where username=#{username}
+	</delete>
+
+	<!-- 根据"Account"查询-->
+	<select id="selectByAccount" resultMap="base_result_map">
+		select <include refid="base_column_list"/>  from user where account=#{account}
+	</select>
+	<!-- 根据"Account"更新-->
+	<update id="updateByAccount" parameterType="com.easyboke.entity.po.User">
+		update  user
+		<set>
+			<if test="bean.id!=null">
+			id=#{bean.id},
+			</if>
+			<if test="bean.username!=null">
+			username=#{bean.username},
+			</if>
+			<if test="bean.account!=null">
+			account=#{bean.account},
+			</if>
+			<if test="bean.password!=null">
+			password=#{bean.password},
+			</if>
+			<if test="bean.email!=null">
+			email=#{bean.email},
+			</if>
+			<if test="bean.gender!=null">
+			gender=#{bean.gender},
+			</if>
+			<if test="bean.age!=null">
+			age=#{bean.age},
+			</if>
+			<if test="bean.avatar!=null">
+			avatar=#{bean.avatar},
+			</if>
+			<if test="bean.status!=null">
+			status=#{bean.status},
+			</if>
+			<if test="bean.createTime!=null">
+			create_time=#{bean.createTime},
+			</if>
+			<if test="bean.updateTime!=null">
+			update_time=#{bean.updateTime},
+			</if>
+		</set>
+		<where>
+			account=#{account}
+		</where>
+	</update>
+
+	<!-- 根据"Account"删除-->
+	<delete id="deleteByAccount">
+		delete from user where account=#{account}
+	</delete>
+
+	<!-- 根据"Email"查询-->
+	<select id="selectByEmail" resultMap="base_result_map">
+		select <include refid="base_column_list"/>  from user where email=#{email}
+	</select>
+
+	<!-- 查询用户年龄分布-->
+	<select id="selectAgeDistribution" resultType="java.util.Map">
+		SELECT
+			SUM(CASE WHEN age IS NULL OR age &lt; 18 THEN 1 ELSE 0 END) AS under18,
+			SUM(CASE WHEN age >= 18 AND age &lt;= 25 THEN 1 ELSE 0 END) AS age18_25,
+			SUM(CASE WHEN age >= 26 AND age &lt;= 35 THEN 1 ELSE 0 END) AS age26_35,
+			SUM(CASE WHEN age >= 36 AND age &lt;= 45 THEN 1 ELSE 0 END) AS age36_45,
+			SUM(CASE WHEN age > 45 THEN 1 ELSE 0 END) AS above45
+		FROM user
+	</select>
+
+</mapper>

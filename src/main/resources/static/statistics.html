@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>访问统计 - Easy博客后台管理系统</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: #F5F6F7; min-height: 100vh;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #12B7F5 0%, #0099FF 100%);
+            color: white; padding: 20px 40px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .header h1 { font-size: 24px; font-weight: 600; }
+        .header-actions { display: flex; gap: 15px; align-items: center; }
+        .btn {
+            padding: 10px 20px; border: none; border-radius: 8px;
+            cursor: pointer; font-size: 14px; font-weight: 500;
+            transition: all 0.3s ease; text-decoration: none;
+            display: inline-flex; align-items: center; gap: 8px;
+            background: white; color: #12B7F5;
+        }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(255,255,255,0.3); }
+
+        .container { max-width: 1400px; margin: 30px auto; padding: 0 20px; }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px; margin-bottom: 30px;
+        }
+        .stat-card {
+            background: #FFFFFF; padding: 25px; border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            transition: all 0.3s ease; text-align: center;
+        }
+        .stat-card:hover { transform: translateY(-5px); box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
+        .stat-card h3 { color: #555555; font-size: 14px; margin-bottom: 10px; font-weight: 500; }
+        .stat-value { font-size: 32px; font-weight: 700; color: #12B7F5; }
+        .stat-label { color: #888888; font-size: 12px; margin-top: 5px; }
+
+        .charts-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px; margin-bottom: 30px;
+        }
+        @media (max-width: 900px) { .charts-row { grid-template-columns: 1fr; } }
+
+        .chart-container {
+            background: #FFFFFF; padding: 30px; border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        }
+        .chart-container h3 { color: #1A1A2E; font-size: 18px; margin-bottom: 20px; font-weight: 600; }
+        .chart-wrapper { position: relative; height: 350px; }
+
+        .article-selector {
+            background: #FFFFFF; padding: 20px; border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08); margin-bottom: 30px;
+        }
+        .article-selector label { display: block; margin-bottom: 10px; color: #555555; font-weight: 500; }
+        .article-selector select {
+            width: 100%; padding: 10px 15px; border: 1.5px solid #E5E7EB;
+            border-radius: 8px; font-size: 14px; outline: none;
+            color: #333333;
+        }
+        .article-selector select:focus {
+            border-color: #12B7F5; box-shadow: 0 0 0 2px rgba(18,183,245,0.15);
+        }
+
+        .loading { text-align: center; padding: 40px; color: #888888; }
+        .error { background: #fef0f0; color: #F56C6C; padding: 15px 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #F56C6C; }
+
+        .top-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        .top-table th { background: #F5F6F7; padding: 12px; text-align: left; font-weight: 600; color: #1A1A2E; border-bottom: 2px solid #E5E7EB; }
+        .top-table td { padding: 12px; border-bottom: 1px solid #E5E7EB; color: #333333; }
+        .top-table tr:hover { background: #F5F6F7; }
+        .rank-badge { display: inline-block; width: 24px; height: 24px; line-height: 24px; text-align: center; border-radius: 50%; color: white; font-size: 12px; font-weight: 700; }
+        .rank-1 { background: #F56C6C; } .rank-2 { background: #e6a23c; } .rank-3 { background: #67C23A; }
+        .rank-other { background: #909399; }
+    </style>
+</head>
+<body>
+<div class="header">
+    <h1>访问统计分析</h1>
+    <div class="header-actions">
+        <a href="/admin-dashboard.html" class="btn">返回导航</a>
+        <a href="/article-management.html" class="btn">文章管理</a>
+    </div>
+</div>
+
+<div class="container">
+    <div id="errorMessage"></div>
+
+    <!-- 文章/视频详情统计 -->
+    <div class="article-selector">
+        <label>查看单篇内容详情统计：</label>
+        <div style="margin-bottom: 15px; display: flex; gap: 10px;">
+            <button class="btn" id="articleTab" onclick="switchType('article')" style="background: #12B7F5; color: white;">文章</button>
+            <button class="btn" id="videoTab" onclick="switchType('video')" style="background: white; color: #12B7F5;">视频</button>
+        </div>
+        <select id="contentSelect"><option value="">请选择...</option></select>
+    </div>
+
+    <div class="stats-grid" id="detailStats">
+        <div class="stat-card"><h3>总浏览量</h3><div class="stat-value" id="dTotalViews">0</div></div>
+        <div class="stat-card"><h3>男性用户</h3><div class="stat-value" id="dMaleViews">0</div></div>
+        <div class="stat-card"><h3>女性用户</h3><div class="stat-value" id="dFemaleViews">0</div></div>
+        <div class="stat-card"><h3>未知性别</h3><div class="stat-value" id="dUnknownViews">0</div></div>
+    </div>
+
+    <div class="charts-row">
+        <div class="chart-container"><h3>性别分布</h3><div class="chart-wrapper"><canvas id="genderChart"></canvas></div></div>
+        <div class="chart-container"><h3>年龄分布</h3><div class="chart-wrapper"><canvas id="ageChart"></canvas></div></div>
+    </div>
+</div>
+
+<script>
+    let genderChart = null, ageChart = null;
+    let currentType = 'article';
+
+    // ========== 单篇详情统计 ==========
+    function switchType(type) {
+        currentType = type;
+        const aTab = document.getElementById('articleTab'), vTab = document.getElementById('videoTab');
+        if (type === 'article') {
+            aTab.style.background = '#12B7F5'; aTab.style.color = 'white';
+            vTab.style.background = 'white'; vTab.style.color = '#12B7F5';
+        } else {
+            vTab.style.background = '#12B7F5'; vTab.style.color = 'white';
+            aTab.style.background = 'white'; aTab.style.color = '#12B7F5';
+        }
+        const select = document.getElementById('contentSelect');
+        select.innerHTML = '<option value="">请选择...</option>';
+        loadContentList();
+    }
+
+    async function loadContentList() {
+        try {
+            const url = currentType === 'article' ? '/article/loadDataList?status=1' : '/video/loadDataList?status=1';
+            const res = await fetch(url);
+            const result = await res.json();
+            if (result.status === 'success' && result.data) {
+                const select = document.getElementById('contentSelect');
+                const items = result.data.list || result.data;
+                items.forEach(item => {
+                    const opt = document.createElement('option');
+                    opt.value = item.id; opt.textContent = item.title;
+                    select.appendChild(opt);
+                });
+                if (items.length > 0) { select.value = items[0].id; loadContentStats(items[0].id); }
+            }
+        } catch (e) { showError('加载列表失败：' + e.message); }
+    }
+
+    async function loadContentStats(contentId) {
+        if (!contentId) return;
+        try {
+            const url = currentType === 'article' ? `/article/getArticleById?id=${contentId}` : `/video/getVideoById?id=${contentId}`;
+            const res = await fetch(url);
+            const result = await res.json();
+            if (result.status === 'success' && result.data) {
+                const c = result.data;
+                document.getElementById('dTotalViews').textContent = c.viewCount || 0;
+                document.getElementById('dMaleViews').textContent = c.maleViewCount || 0;
+                document.getElementById('dFemaleViews').textContent = c.femaleViewCount || 0;
+                document.getElementById('dUnknownViews').textContent = c.unknownViewCount || 0;
+                updateDetailCharts(c);
+                hideError();
+            }
+        } catch (e) { showError('加载详情失败：' + e.message); }
+    }
+
+    function updateDetailCharts(c) {
+        const gCtx = document.getElementById('genderChart').getContext('2d');
+        if (genderChart) genderChart.destroy();
+        genderChart = new Chart(gCtx, {
+            type: 'pie', data: {
+                labels: ['男性','女性','未知'],
+                datasets: [{ data: [c.maleViewCount||0, c.femaleViewCount||0, c.unknownViewCount||0], backgroundColor: ['#12B7F5','#f093fb','#E5E7EB'], borderWidth: 2, borderColor: '#fff' }]
+            },
+            options: { responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { position: 'bottom', labels: { padding: 20 } },
+                    tooltip: { callbacks: { label: function(ctx) { const t = ctx.dataset.data.reduce((a,b)=>a+b,0); const p = t>0?((ctx.parsed/t)*100).toFixed(1):0; return `${ctx.label}: ${ctx.parsed} (${p}%)`; } } } } }
+        });
+
+        const aCtx = document.getElementById('ageChart').getContext('2d');
+        if (ageChart) ageChart.destroy();
+        ageChart = new Chart(aCtx, {
+            type: 'doughnut', data: {
+                labels: ['18岁以下','18-25岁','26-35岁','36-45岁','46岁以上'],
+                datasets: [{ data: [c.ageUnder18||0, c.age1825||0, c.age2635||0, c.age3645||0, c.ageAbove45||0], backgroundColor: ['#ff6b6b','#feca57','#48dbfb','#ff9ff3','#54a0ff'], borderWidth: 2, borderColor: '#fff' }]
+            },
+            options: { responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { position: 'bottom', labels: { padding: 20 } },
+                    tooltip: { callbacks: { label: function(ctx) { const t = ctx.dataset.data.reduce((a,b)=>a+b,0); const p = t>0?((ctx.parsed/t)*100).toFixed(1):0; return `${ctx.label}: ${ctx.parsed} (${p}%)`; } } } } }
+        });
+    }
+
+    function showError(msg) { document.getElementById('errorMessage').innerHTML = `<div class="error">${msg}</div>`; }
+    function hideError() { document.getElementById('errorMessage').innerHTML = ''; }
+
+    document.getElementById('contentSelect').addEventListener('change', function(e) { loadContentStats(e.target.value); });
+
+    window.addEventListener('load', function() {
+        loadContentList();
+    });
+</script>
+</body>
+</html>

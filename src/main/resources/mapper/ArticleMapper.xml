@@ -1,0 +1,690 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.easyboke.mappers.ArticleMapper">
+    <!--实体映射-->
+    <resultMap id="base_result_map" type="com.easyboke.entity.po.Article">
+        <!--文章ID-->
+        <id column="id" property="id"/>
+        <!--文章标题-->
+        <result column="title" property="title"/>
+        <!--文章内容-->
+        <result column="content" property="content"/>
+        <!--文章摘要-->
+        <result column="summary" property="summary"/>
+        <!--封面图片URL-->
+        <result column="cover_image" property="coverImage"/>
+        <!--分类ID-->
+        <result column="category_id" property="categoryId"/>
+        <!--状态：0-草稿，1-已发布，2-已删除-->
+        <result column="status" property="status"/>
+        <!--浏览次数-->
+        <result column="view_count" property="viewCount"/>
+        <!--男性访问量-->
+        <result column="male_view_count" property="maleViewCount"/>
+        <!--女性访问量-->
+        <result column="female_view_count" property="femaleViewCount"/>
+        <!--未知性别访问量-->
+        <result column="unknown_view_count" property="unknownViewCount"/>
+        <!--18岁以下访问量-->
+        <result column="age_under_18" property="ageUnder18"/>
+        <!--18-25岁访问量-->
+        <result column="age_18_25" property="age1825"/>
+        <!--26-35岁访问量-->
+        <result column="age_26_35" property="age2635"/>
+        <!--36-45岁访问量-->
+        <result column="age_36_45" property="age3645"/>
+        <!--46岁以上访问量-->
+        <result column="age_above_45" property="ageAbove45"/>
+        <!--点赞数-->
+        <result column="like_count" property="likeCount"/>
+        <!--评论数-->
+        <result column="comment_count" property="commentCount"/>
+        <!--发布时间-->
+        <result column="publish_time" property="publishTime"/>
+        <!--创建时间-->
+        <result column="create_time" property="createTime"/>
+        <!--更新时间-->
+        <result column="update_time" property="updateTime"/>
+   </resultMap>
+    <!--通用查询结果列-->
+<sql id="base_column_list">
+	id,title,content,summary,cover_image,category_id,status,view_count,male_view_count,female_view_count,unknown_view_count,age_under_18,age_18_25,age_26_35,age_36_45,age_above_45,like_count,comment_count,publish_time,create_time,update_time
+    </sql>
+
+    <!--基础查询条件-->
+    <sql id="base_query_condition">
+		<if test="query.id!=null">
+			and id=#{query.id} 
+		</if>
+		<if test="query.title!=null and query.title!=''">
+			and title=#{query.title} 
+		</if>
+		<if test="query.content!=null and query.content!=''">
+			and content=#{query.content} 
+		</if>
+		<if test="query.summary!=null and query.summary!=''">
+			and summary=#{query.summary} 
+		</if>
+		<if test="query.coverImage!=null and query.coverImage!=''">
+			and cover_image=#{query.coverImage} 
+		</if>
+		<if test="query.categoryId!=null">
+			and category_id=#{query.categoryId} 
+		</if>
+		<if test="query.status!=null">
+			and status=#{query.status} 
+		</if>
+		<if test="query.viewCount!=null">
+			and view_count=#{query.viewCount} 
+		</if>
+		<if test="query.maleViewCount!=null">
+			and male_view_count=#{query.maleViewCount} 
+		</if>
+		<if test="query.femaleViewCount!=null">
+			and female_view_count=#{query.femaleViewCount} 
+		</if>
+		<if test="query.unknownViewCount!=null">
+			and unknown_view_count=#{query.unknownViewCount} 
+		</if>
+		<if test="query.ageUnder18!=null">
+			and age_under_18=#{query.ageUnder18} 
+		</if>
+		<if test="query.age1825!=null">
+			and age_18_25=#{query.age1825} 
+		</if>
+		<if test="query.age2635!=null">
+			and age_26_35=#{query.age2635} 
+		</if>
+		<if test="query.age3645!=null">
+			and age_36_45=#{query.age3645} 
+		</if>
+		<if test="query.ageAbove45!=null">
+			and age_above_45=#{query.ageAbove45} 
+		</if>
+		<if test="query.likeCount!=null">
+			and like_count=#{query.likeCount} 
+		</if>
+		<if test="query.commentCount!=null">
+			and comment_count=#{query.commentCount} 
+		</if>
+		<if test="query.publishTime!=null">
+			and publish_time=#{query.publishTime} 
+		</if>
+		<if test="query.createTime!=null">
+			and create_time=#{query.createTime} 
+		</if>
+		<if test="query.updateTime!=null">
+			and update_time=#{query.updateTime} 
+		</if>
+    </sql>
+    <!--扩展查询条件-->
+    <sql id="base_query_condition_extend">
+		<if test="query.titleFuzzy!=null and query.titleFuzzy!=''">
+			and title like concat('%',#{query.titleFuzzy},'%')
+		</if>
+		<if test="query.contentFuzzy!=null and query.contentFuzzy!=''">
+			and content like concat('%',#{query.contentFuzzy},'%')
+		</if>
+		<if test="query.summaryFuzzy!=null and query.summaryFuzzy!=''">
+			and summary like concat('%',#{query.summaryFuzzy},'%')
+		</if>
+		<if test="query.coverImageFuzzy!=null and query.coverImageFuzzy!=''">
+			and cover_image like concat('%',#{query.coverImageFuzzy},'%')
+		</if>
+		<if test="query.publishTimeStart!=null and query.publishTimeStart!=''">
+			<![CDATA[ and  publish_time >= str_to_date(#{query.publishTimeStart},'%Y-%m-%d') ]]>
+		</if>
+		<if test="query.publishTimeEnd!=null and query.publishTimeEnd!=''">
+			<![CDATA[ and  publish_time < date_sub(str_to_date(#{query.publishTimeEnd},'%Y-%m-%d'),interval -1 day) ]]>
+		</if>
+		<if test="query.createTimeStart!=null and query.createTimeStart!=''">
+			<![CDATA[ and  create_time >= str_to_date(#{query.createTimeStart},'%Y-%m-%d') ]]>
+		</if>
+		<if test="query.createTimeEnd!=null and query.createTimeEnd!=''">
+			<![CDATA[ and  create_time < date_sub(str_to_date(#{query.createTimeEnd},'%Y-%m-%d'),interval -1 day) ]]>
+		</if>
+		<if test="query.updateTimeStart!=null and query.updateTimeStart!=''">
+			<![CDATA[ and  update_time >= str_to_date(#{query.updateTimeStart},'%Y-%m-%d') ]]>
+		</if>
+		<if test="query.updateTimeEnd!=null and query.updateTimeEnd!=''">
+			<![CDATA[ and  update_time < date_sub(str_to_date(#{query.updateTimeEnd},'%Y-%m-%d'),interval -1 day) ]]>
+		</if>
+    </sql>
+    <!--通用查询条件-->
+    <sql id="query_condition">
+		<where>
+			<include refid="base_query_condition"/>
+			<include refid="base_query_condition_extend"/>
+		</where>
+    </sql>
+    <!--查询列表-->
+	<select id="selectList" resultMap="base_result_map">
+		SELECT <include refid="base_column_list"/> FROM article <include refid="query_condition"/>
+		<choose>
+				<when test="query.orderBy!=null"> order by ${query.orderBy}</when>
+				<otherwise> order by publish_time desc</otherwise>
+			</choose>
+		<if test="query.simplePage!=null">limit #{query.simplePage.start},#{query.simplePage.end}</if>
+	</select>
+  <!--查询数量-->
+	<select id="selectCount"  resultType="java.lang.Integer">
+		SELECT count(1) FROM article <include refid="query_condition"/>
+	</select>
+    <!--插入(匹配有值的字段)-->
+	<insert id="insert"  parameterType="com.easyboke.entity.po.Article">
+		<selectKey keyProperty="bean.id" resultType="Integer" order="AFTER">
+			SELECT LAST_INSERT_ID();
+		</selectKey>
+		insert into article
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="bean.id!=null">
+				id,
+			</if>
+			<if test="bean.title!=null">
+				title,
+			</if>
+			<if test="bean.content!=null">
+				content,
+			</if>
+			<if test="bean.summary!=null">
+				summary,
+			</if>
+			<if test="bean.coverImage!=null">
+				cover_image,
+			</if>
+			<if test="bean.categoryId!=null">
+				category_id,
+			</if>
+			<if test="bean.status!=null">
+				status,
+			</if>
+			<if test="bean.viewCount!=null">
+				view_count,
+			</if>
+			<if test="bean.maleViewCount!=null">
+				male_view_count,
+			</if>
+			<if test="bean.femaleViewCount!=null">
+				female_view_count,
+			</if>
+			<if test="bean.unknownViewCount!=null">
+				unknown_view_count,
+			</if>
+			<if test="bean.ageUnder18!=null">
+				age_under_18,
+			</if>
+			<if test="bean.age1825!=null">
+				age_18_25,
+			</if>
+			<if test="bean.age2635!=null">
+				age_26_35,
+			</if>
+			<if test="bean.age3645!=null">
+				age_36_45,
+			</if>
+			<if test="bean.ageAbove45!=null">
+				age_above_45,
+			</if>
+			<if test="bean.likeCount!=null">
+				like_count,
+			</if>
+			<if test="bean.commentCount!=null">
+				comment_count,
+			</if>
+			<if test="bean.publishTime!=null">
+				publish_time,
+			</if>
+			<if test="bean.createTime!=null">
+				create_time,
+			</if>
+			<if test="bean.updateTime!=null">
+				update_time,
+			</if>
+		</trim>
+		<trim prefix="values(" suffix=")" suffixOverrides=",">
+ 			<if test="bean.id!=null">
+ 				#{bean.id},
+			 </if>
+ 			<if test="bean.title!=null">
+ 				#{bean.title},
+			 </if>
+ 			<if test="bean.content!=null">
+ 				#{bean.content},
+			 </if>
+ 			<if test="bean.summary!=null">
+ 				#{bean.summary},
+			 </if>
+ 			<if test="bean.coverImage!=null">
+ 				#{bean.coverImage},
+			 </if>
+ 			<if test="bean.categoryId!=null">
+ 				#{bean.categoryId},
+			 </if>
+ 			<if test="bean.status!=null">
+ 				#{bean.status},
+			 </if>
+ 			<if test="bean.viewCount!=null">
+ 				#{bean.viewCount},
+			 </if>
+ 			<if test="bean.maleViewCount!=null">
+ 				#{bean.maleViewCount},
+			 </if>
+ 			<if test="bean.femaleViewCount!=null">
+ 				#{bean.femaleViewCount},
+			 </if>
+ 			<if test="bean.unknownViewCount!=null">
+ 				#{bean.unknownViewCount},
+			 </if>
+ 			<if test="bean.ageUnder18!=null">
+ 				#{bean.ageUnder18},
+			 </if>
+ 			<if test="bean.age1825!=null">
+ 				#{bean.age1825},
+			 </if>
+ 			<if test="bean.age2635!=null">
+ 				#{bean.age2635},
+			 </if>
+ 			<if test="bean.age3645!=null">
+ 				#{bean.age3645},
+			 </if>
+ 			<if test="bean.ageAbove45!=null">
+ 				#{bean.ageAbove45},
+			 </if>
+ 			<if test="bean.likeCount!=null">
+ 				#{bean.likeCount},
+			 </if>
+ 			<if test="bean.commentCount!=null">
+ 				#{bean.commentCount},
+			 </if>
+ 			<if test="bean.publishTime!=null">
+ 				#{bean.publishTime},
+			 </if>
+ 			<if test="bean.createTime!=null">
+ 				#{bean.createTime},
+			 </if>
+ 			<if test="bean.updateTime!=null">
+ 				#{bean.updateTime},
+			 </if>
+		 </trim>
+	</insert>
+    <!--插入或者更新(匹配有值的字段)-->
+	<insert id="insertOrUpdate"  parameterType="com.easyboke.entity.po.Article">
+		insert into article
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="bean.id!=null">
+				id,
+			</if>
+			<if test="bean.title!=null">
+				title,
+			</if>
+			<if test="bean.content!=null">
+				content,
+			</if>
+			<if test="bean.summary!=null">
+				summary,
+			</if>
+			<if test="bean.coverImage!=null">
+				cover_image,
+			</if>
+			<if test="bean.categoryId!=null">
+				category_id,
+			</if>
+			<if test="bean.status!=null">
+				status,
+			</if>
+			<if test="bean.viewCount!=null">
+				view_count,
+			</if>
+			<if test="bean.maleViewCount!=null">
+				male_view_count,
+			</if>
+			<if test="bean.femaleViewCount!=null">
+				female_view_count,
+			</if>
+			<if test="bean.unknownViewCount!=null">
+				unknown_view_count,
+			</if>
+			<if test="bean.ageUnder18!=null">
+				age_under_18,
+			</if>
+			<if test="bean.age1825!=null">
+				age_18_25,
+			</if>
+			<if test="bean.age2635!=null">
+				age_26_35,
+			</if>
+			<if test="bean.age3645!=null">
+				age_36_45,
+			</if>
+			<if test="bean.ageAbove45!=null">
+				age_above_45,
+			</if>
+			<if test="bean.likeCount!=null">
+				like_count,
+			</if>
+			<if test="bean.commentCount!=null">
+				comment_count,
+			</if>
+			<if test="bean.publishTime!=null">
+				publish_time,
+			</if>
+			<if test="bean.createTime!=null">
+				create_time,
+			</if>
+			<if test="bean.updateTime!=null">
+				update_time,
+			</if>
+		</trim>
+		<trim prefix="values(" suffix=")" suffixOverrides=",">
+ 			<if test="bean.id!=null">
+ 				#{bean.id},
+			 </if>
+ 			<if test="bean.title!=null">
+ 				#{bean.title},
+			 </if>
+ 			<if test="bean.content!=null">
+ 				#{bean.content},
+			 </if>
+ 			<if test="bean.summary!=null">
+ 				#{bean.summary},
+			 </if>
+ 			<if test="bean.coverImage!=null">
+ 				#{bean.coverImage},
+			 </if>
+ 			<if test="bean.categoryId!=null">
+ 				#{bean.categoryId},
+			 </if>
+ 			<if test="bean.status!=null">
+ 				#{bean.status},
+			 </if>
+ 			<if test="bean.viewCount!=null">
+ 				#{bean.viewCount},
+			 </if>
+ 			<if test="bean.maleViewCount!=null">
+ 				#{bean.maleViewCount},
+			 </if>
+ 			<if test="bean.femaleViewCount!=null">
+ 				#{bean.femaleViewCount},
+			 </if>
+ 			<if test="bean.unknownViewCount!=null">
+ 				#{bean.unknownViewCount},
+			 </if>
+ 			<if test="bean.ageUnder18!=null">
+ 				#{bean.ageUnder18},
+			 </if>
+ 			<if test="bean.age1825!=null">
+ 				#{bean.age1825},
+			 </if>
+ 			<if test="bean.age2635!=null">
+ 				#{bean.age2635},
+			 </if>
+ 			<if test="bean.age3645!=null">
+ 				#{bean.age3645},
+			 </if>
+ 			<if test="bean.ageAbove45!=null">
+ 				#{bean.ageAbove45},
+			 </if>
+ 			<if test="bean.likeCount!=null">
+ 				#{bean.likeCount},
+			 </if>
+ 			<if test="bean.commentCount!=null">
+ 				#{bean.commentCount},
+			 </if>
+ 			<if test="bean.publishTime!=null">
+ 				#{bean.publishTime},
+			 </if>
+ 			<if test="bean.createTime!=null">
+ 				#{bean.createTime},
+			 </if>
+ 			<if test="bean.updateTime!=null">
+ 				#{bean.updateTime},
+			 </if>
+		 </trim>
+		on DUPLICATE key update
+		<trim prefix="" suffix="" suffixOverrides=",">
+			<if test="bean.title!=null">
+				title =VALUES(title),
+			</if>
+			<if test="bean.content!=null">
+				content =VALUES(content),
+			</if>
+			<if test="bean.summary!=null">
+				summary =VALUES(summary),
+			</if>
+			<if test="bean.coverImage!=null">
+				cover_image =VALUES(cover_image),
+			</if>
+			<if test="bean.categoryId!=null">
+				category_id =VALUES(category_id),
+			</if>
+			<if test="bean.status!=null">
+				status =VALUES(status),
+			</if>
+			<if test="bean.viewCount!=null">
+				view_count =VALUES(view_count),
+			</if>
+			<if test="bean.maleViewCount!=null">
+				male_view_count =VALUES(male_view_count),
+			</if>
+			<if test="bean.femaleViewCount!=null">
+				female_view_count =VALUES(female_view_count),
+			</if>
+			<if test="bean.unknownViewCount!=null">
+				unknown_view_count =VALUES(unknown_view_count),
+			</if>
+			<if test="bean.ageUnder18!=null">
+				age_under_18 =VALUES(age_under_18),
+			</if>
+			<if test="bean.age1825!=null">
+				age_18_25 =VALUES(age_18_25),
+			</if>
+			<if test="bean.age2635!=null">
+				age_26_35 =VALUES(age_26_35),
+			</if>
+			<if test="bean.age3645!=null">
+				age_36_45 =VALUES(age_36_45),
+			</if>
+			<if test="bean.ageAbove45!=null">
+				age_above_45 =VALUES(age_above_45),
+			</if>
+			<if test="bean.likeCount!=null">
+				like_count =VALUES(like_count),
+			</if>
+			<if test="bean.commentCount!=null">
+				comment_count =VALUES(comment_count),
+			</if>
+			<if test="bean.publishTime!=null">
+				publish_time =VALUES(publish_time),
+			</if>
+			<if test="bean.createTime!=null">
+				create_time =VALUES(create_time),
+			</if>
+			<if test="bean.updateTime!=null">
+				update_time =VALUES(update_time),
+			</if>
+
+		</trim>
+	</insert>
+	<!--添加(批量插入)-->
+	<insert id="insertBatch" parameterType="com.easyboke.entity.po.Article">
+		insert into article(title,content,summary,cover_image,category_id,status,view_count,male_view_count,female_view_count,unknown_view_count,age_under_18,age_18_25,age_26_35,age_36_45,age_above_45,like_count,comment_count,publish_time,create_time,update_time)values
+		<foreach collection="list" item="item" separator=",">
+			(#{item.title},#{item.content},#{item.summary},#{item.coverImage},#{item.categoryId},#{item.status},#{item.viewCount},#{item.maleViewCount},#{item.femaleViewCount},#{item.unknownViewCount},#{item.ageUnder18},#{item.age1825},#{item.age2635},#{item.age3645},#{item.ageAbove45},#{item.likeCount},#{item.commentCount},#{item.publishTime},#{item.createTime},#{item.updateTime})
+		</foreach>
+	 </insert>
+	<!--批量插入或更新-->
+	<insert id="insertOrUpdateBatch" parameterType="com.easyboke.entity.po.Article">
+		insert into article(title,content,summary,cover_image,category_id,status,view_count,male_view_count,female_view_count,unknown_view_count,age_under_18,age_18_25,age_26_35,age_36_45,age_above_45,like_count,comment_count,publish_time,create_time,update_time)values
+		<foreach collection="list" item="item" separator=",">
+			(#{item.title},#{item.content},#{item.summary},#{item.coverImage},#{item.categoryId},#{item.status},#{item.viewCount},#{item.maleViewCount},#{item.femaleViewCount},#{item.unknownViewCount},#{item.ageUnder18},#{item.age1825},#{item.age2635},#{item.age3645},#{item.ageAbove45},#{item.likeCount},#{item.commentCount},#{item.publishTime},#{item.createTime},#{item.updateTime})
+		</foreach>
+			on DUPLICATE key update
+            id= VALUES(id),title= VALUES(title),content= VALUES(content),summary= VALUES(summary),cover_image= VALUES(cover_image),category_id= VALUES(category_id),status= VALUES(status),view_count= VALUES(view_count),male_view_count= VALUES(male_view_count),female_view_count= VALUES(female_view_count),unknown_view_count= VALUES(unknown_view_count),age_under_18= VALUES(age_under_18),age_18_25= VALUES(age_18_25),age_26_35= VALUES(age_26_35),age_36_45= VALUES(age_36_45),age_above_45= VALUES(age_above_45),like_count= VALUES(like_count),comment_count= VALUES(comment_count),publish_time= VALUES(publish_time),create_time= VALUES(create_time),update_time= VALUES(update_time)
+	</insert>
+	<!-- 根据"Id"查询-->
+	<select id="selectById" resultMap="base_result_map">
+		select <include refid="base_column_list"/>  from article where id=#{id}
+	</select>
+	<!-- 根据"Id"更新-->
+	<update id="updateById" parameterType="com.easyboke.entity.po.Article">
+		update  article
+		<set>
+			<if test="bean.id!=null">
+			id=#{bean.id},
+			</if>
+			<if test="bean.title!=null">
+			title=#{bean.title},
+			</if>
+			<if test="bean.content!=null">
+			content=#{bean.content},
+			</if>
+			<if test="bean.summary!=null">
+			summary=#{bean.summary},
+			</if>
+			<if test="bean.coverImage!=null">
+			cover_image=#{bean.coverImage},
+			</if>
+			<if test="bean.categoryId!=null">
+			category_id=#{bean.categoryId},
+			</if>
+			<if test="bean.status!=null">
+			status=#{bean.status},
+			</if>
+			<if test="bean.viewCount!=null">
+			view_count=#{bean.viewCount},
+			</if>
+			<if test="bean.maleViewCount!=null">
+			male_view_count=#{bean.maleViewCount},
+			</if>
+			<if test="bean.femaleViewCount!=null">
+			female_view_count=#{bean.femaleViewCount},
+			</if>
+			<if test="bean.unknownViewCount!=null">
+			unknown_view_count=#{bean.unknownViewCount},
+			</if>
+			<if test="bean.ageUnder18!=null">
+			age_under_18=#{bean.ageUnder18},
+			</if>
+			<if test="bean.age1825!=null">
+			age_18_25=#{bean.age1825},
+			</if>
+			<if test="bean.age2635!=null">
+			age_26_35=#{bean.age2635},
+			</if>
+			<if test="bean.age3645!=null">
+			age_36_45=#{bean.age3645},
+			</if>
+			<if test="bean.ageAbove45!=null">
+			age_above_45=#{bean.ageAbove45},
+			</if>
+			<if test="bean.likeCount!=null">
+			like_count=#{bean.likeCount},
+			</if>
+			<if test="bean.commentCount!=null">
+			comment_count=#{bean.commentCount},
+			</if>
+			<if test="bean.publishTime!=null">
+			publish_time=#{bean.publishTime},
+			</if>
+			<if test="bean.createTime!=null">
+			create_time=#{bean.createTime},
+			</if>
+			<if test="bean.updateTime!=null">
+			update_time=#{bean.updateTime},
+			</if>
+		</set>
+		<where>
+			id=#{id}
+		</where>
+	</update>
+
+	<!-- 根据"Id"删除-->
+	<delete id="deleteById">
+		delete from article where id=#{id}
+	</delete>
+
+	<!-- 增加浏览量 -->
+	<update id="incrementViewCount">
+		update article set view_count = view_count + 1 where id=#{id}
+	</update>
+
+	<!-- 根据标签ID查询文章列表 -->
+	<select id="selectListByTagId" resultMap="base_result_map">
+		SELECT a.<include refid="base_column_list"/>
+		FROM article a
+		INNER JOIN article_tag at ON a.id = at.article_id
+		WHERE at.tag_id = #{tagId}
+		<if test="status != null">
+			AND a.status = #{status}
+		</if>
+		ORDER BY a.publish_time DESC
+	</select>
+	<!-- 增加男性访问量 -->
+	<update id="incrementMaleViewCount">
+		update article set male_view_count = male_view_count + 1 where id=#{id}
+	</update>
+
+	<!-- 增加女性访问量 -->
+	<update id="incrementFemaleViewCount">
+		update article set female_view_count = female_view_count + 1 where id=#{id}
+	</update>
+
+	<!-- 增加未知性别访问量 -->
+	<update id="incrementUnknownViewCount">
+		update article set unknown_view_count = unknown_view_count + 1 where id=#{id}
+	</update>
+
+	<!-- 增加18岁以下访问量 -->
+	<update id="incrementAgeUnder18">
+		update article set age_under_18 = age_under_18 + 1 where id=#{id}
+	</update>
+
+	<!-- 增加18-25岁访问量 -->
+	<update id="incrementAge1825">
+		update article set age_18_25 = age_18_25 + 1 where id=#{id}
+	</update>
+
+	<!-- 增加26-35岁访问量 -->
+	<update id="incrementAge2635">
+		update article set age_26_35 = age_26_35 + 1 where id=#{id}
+	</update>
+
+	<!-- 增加36-45岁访问量 -->
+	<update id="incrementAge3645">
+		update article set age_36_45 = age_36_45 + 1 where id=#{id}
+	</update>
+
+	<!-- 增加46岁以上访问量 -->
+	<update id="incrementAgeAbove45">
+		update article set age_above_45 = age_above_45 + 1 where id=#{id}
+	</update>
+
+	<!-- 增加点赞数 -->
+	<update id="incrementLikeCount">
+		update article set like_count = like_count + 1 where id=#{id}
+	</update>
+
+	<!-- 减少点赞数 -->
+	<update id="decrementLikeCount">
+		update article set like_count = like_count - 1 where id=#{id} and like_count > 0
+	</update>
+
+	<!-- TOP热度排行：热度值 = 浏览量*1 + 点赞量*5 + 评论量*10 -->
+	<select id="selectTopByHeat" resultMap="base_result_map">
+		SELECT <include refid="base_column_list"/>,
+			(view_count * 1 + like_count * 5 + comment_count * 10) as heat_score
+		FROM article
+		WHERE status = 1
+		<if test="startTime != null and startTime != ''">
+			AND publish_time &gt;= #{startTime}
+		</if>
+		<if test="endTime != null and endTime != ''">
+			AND publish_time &lt;= #{endTime}
+		</if>
+		ORDER BY heat_score DESC
+		<if test="limit != null">
+			LIMIT #{limit}
+		</if>
+	</select>
+
+</mapper>
